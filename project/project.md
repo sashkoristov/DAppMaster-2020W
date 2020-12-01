@@ -216,7 +216,7 @@ Make sure you can run the steps on your Laptop / PC.
 ### Rough functions
 
 Serverless functions always see a fresh filesystem, but for `bwa` it's useful to have files persist.
-We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3 folder for AWS Lambda functions, and thus fakes continuity between functions (at least within the `ParallelFor`).
+We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3 folder for AWS Lambda functions, and thus fakes continuity between functions (at least between `bwa` steps).
 
 #### Split `Storage` 
 
