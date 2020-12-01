@@ -200,8 +200,8 @@ Think about these things:
 
 * How to group the above algorithm into functions 
 * How do you best 'keep' / 'transport' files between subsequent functions?
-* Each parallel function will produce files with the same name. How do you prevent naming conflicts on S3?
-* What information each function needs, how you best represent it (file content strings, S3 ARNs, collections thereof, named fields)
+* Each parallel function will produce files with the same name. How do you prevent naming conflicts on the storage?
+* What information each function needs, how you best represent it (file content strings, storage ARNs, collections thereof, named fields)
 * How information flows between your functions
 
 Put together the FC using the FC editor, AFCL Java API, or the YAML editor. The main goal is to think about modularity and data flow. 
@@ -216,7 +216,7 @@ Make sure you can run the steps on your Laptop / PC.
 ### Rough functions
 
 Serverless functions always see a fresh filesystem, but for `bwa` it's useful to have files persist.
-We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3 folder for AWS Lambda functions, and thus fakes continuity between functions (at least between `bwa` steps).
+We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3/Object Storage folder for AWS Lambda functions, and thus fakes continuity between functions (at least between `bwa` steps).
 
 #### Split `Storage` 
 
@@ -226,7 +226,7 @@ This function should split the reference genome `NC_000913.3.fasta` into smaller
 
 This function should run `bwa index` on a reference genome split created previously. It creates an index to make it better searchable.
 
-#### bwa aln `S3`
+#### bwa aln `Storage`
 
 Run `bwa aln` (align) for a reference genome split created previously, for both read files (5'3 and 3'5, here R1 and R2). This is the main step of `bwa`; it aligns the reads to a reference genome. It is visualized in the table above.
 
@@ -235,7 +235,7 @@ Hints:
 * 5'3 and 3'5 are directions on DNA strings, similar to 'upstream' and 'downstream' of a river. In paired-end sequencing, you read DNA from both directions (hence `hipa7_reads_R1.fastq` & `hipa7_reads_R2.fastq`). Thanks to the [structure of DNA](https://en.wikipedia.org/wiki/Directionality_(molecular_biology)), you always know what 5'3 and 3'5 is, regardless of how you look at it.
 
 
-#### bwa sampe `S3`
+#### bwa sampe `Storage`
 
 This function should run `bwa sampe` (**sam**-**p**aired-**e**nd) for the `.sai` pair created in the previous step (R1 and R2). This will put the aligned reads into one `.sam` file.
 
@@ -282,7 +282,7 @@ Develop the given scheduler to schedule the FC across all function deployments.
 ----
 
 
-# Project 3: Prediction of stock prices `S3, Forecast, webhook` (Python, Java, node.js)
+# Project 3: Prediction of stock prices `Storage, Forecast, webhook` (Python, Java, node.js)
 
 You'll create a real-life FC to predict the price of stocks you can buy and sell.
 
@@ -308,7 +308,7 @@ This should be done in parallel, per stock. The result should be visualised toge
 
 ### Rough steps
 
-* Pull commodity prices to S3
+* Pull commodity prices to the storage
 * Enter them into AWS Forecast
 * Forecast for the coming year for each commodity
 * Create a chart showing the past and future price of all commodities.
@@ -321,7 +321,7 @@ Think about these things:
 
 * How to group the above algorithm into functions 
 * What you can do in parallel; what is independent from each other
-* What information each function needs, how you best represent it (S3 ARNs, collections thereof, named fields)
+* What information each function needs, how you best represent it (Storage ARNs, collections thereof, named fields)
 * How information flows between your functions
 
 Put together the FC using the FC editor, AFCL Java API, or the YAML editor. The main goal is to think about modularity and data flow. 
