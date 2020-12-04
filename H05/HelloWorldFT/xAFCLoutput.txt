@@ -1,0 +1,29 @@
+java -jar xAFCL.jar helloFT.yaml input.json
+217 [main] INFO at.enactmentengine.serverless.parser.YAMLParser - Workflow was converted to an executable workflow.
+237 [main] INFO at.enactmentengine.serverless.nodes.ExecutableWorkflow - Starting execution of workflow: "helloFT" [at 1607107589710ms]
+238 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Executing function HelloWorld at resource: arn:aws:lambda:us-east-1:xxxxxxxxxxxx:function:helloWorld1 [1607107589712ms], id=0
+238 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Input for function HelloWorld : {name=sashko} [1607107589712ms], id=0
+241 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Invoking function with fault tolerance...
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.databind.util.ClassUtil (file:/C:/Users/sasko/Desktop/test/TestFT/xAFCL.jar) to method java.lang.Throwable.setCause(java.lang.Throwable)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.databind.util.ClassUtil
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1366 [pool-1-thread-1] ERROR at.uibk.dps.InvokationThread - Invocation in Thread[pool-1-thread-1,5,main]failed! - Error:Function not found: arn:aws:lambda:us-east-1:xxxxxxxxxxxx:function:helloWorld1
+1366 [pool-1-thread-1] INFO at.uibk.dps.MasterThread - ##############  First invokation has failed retrying 0 times.  ##############
+1367 [pool-1-thread-1] INFO at.uibk.dps.MasterThread - ##############  Trying Alternative Plan 0  ##############
+1774 [Thread-0] INFO at.uibk.dps.InvokationThread - Invocation in Thread[Thread-0,5,main] OK - RESULT: {"message":"Hello sashko"}
+1822 [pool-1-thread-1] INFO at.uibk.dps.InvokationThread - Stopping
+1822 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Function took: 1582 ms. Result: HelloWorld : {"message":"Hello sashko"} [1607107591296ms], id=0
+1823 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Executing function HelloWorld2 at resource: https://eu-de.functions.appdomain.cloud/xxxxxxxxxxxx/helloWorld1.json [1607107591297ms], id=1
+1823 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Input for function HelloWorld2 : {name=Hello sashko} [1607107591297ms], id=1
+1823 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Invoking function with fault tolerance...
+2110 [pool-1-thread-1] ERROR at.uibk.dps.InvokationThread - Invocation in Thread[pool-1-thread-1,5,main]failed! - Error:{"code":"27e61a1ab1355f97b6f485c238ed9d4c","error":"The requested resource does not exist."}
+2110 [pool-1-thread-1] INFO at.uibk.dps.MasterThread - ##############  First invokation has failed retrying 0 times.  ##############
+2111 [pool-1-thread-1] INFO at.uibk.dps.MasterThread - ##############  Trying Alternative Plan 0  ##############
+2663 [Thread-1] INFO at.uibk.dps.InvokationThread - Invocation in Thread[Thread-1,5,main] OK - RESULT: {"message":"Hello Hello sashko"}
+2667 [pool-1-thread-1] INFO at.uibk.dps.InvokationThread - Stopping
+2667 [pool-1-thread-1] INFO at.enactmentengine.serverless.nodes.FunctionNode - Function took: 844 ms. Result: HelloWorld2 : {"message":"Hello Hello sashko"} [1607107592141ms], id=1
+2667 [main] INFO at.enactmentengine.serverless.nodes.ExecutableWorkflow - Workflow completed: {HelloWorld2/message=Hello Hello sashko}
+2668 [main] INFO at.enactmentengine.serverless.main.Executor - Execution took 2663ms.
+2668 [main] INFO at.enactmentengine.serverless.main.Local - Result: {HelloWorld2/message=Hello Hello sashko}

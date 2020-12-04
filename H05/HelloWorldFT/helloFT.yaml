@@ -1,0 +1,43 @@
+---
+name: "helloFT"
+dataIns:
+- name: "name"
+  type: "string"
+  source: "name"
+workflowBody:
+- function:
+    name: "HelloWorld"
+    type: "string"
+    dataIns:
+    - name: "name"
+      type: "string"
+      source: "helloFT/name"
+    properties:
+      - name: "resource"
+        value: "python:arn:aws:lambda:us-east-1:xxxxxxxxxxxx:function:helloWorld1"
+    constraints:
+      - name: "FT-AltPlan-0"
+        value: "1;https://eu-de.functions.appdomain.cloud/xxxxxxxxxxxx/helloWorld.json;"
+    dataOuts:
+    - name: "message"
+      type: "string"
+- function:
+    name: "HelloWorld2"
+    type: "string"
+    dataIns:
+    - name: "name"
+      type: "string"
+      source: "HelloWorld/message"
+    properties:
+      - name: "resource"
+        value: "js:https://eu-de.functions.appdomain.cloud/xxxxxxxxxxxx/helloWorld1.json"
+    constraints:
+      - name: "FT-AltPlan-0"
+        value: "1;arn:aws:lambda:us-east-1:xxxxxxxxxxxx:function:helloWorld;"
+    dataOuts:
+    - name: "message"
+      type: "string"
+dataOuts:
+- name: "output"
+  type: "string"
+  source: "HelloWorld2/message"
