@@ -1,0 +1,185 @@
+---
+name: "objRecFC"
+dataIns:
+- name: "folder"
+  type: "string"
+  source: "folder"
+- name: "threshold"
+  type: "number"
+  source: "threshold"
+workflowBody:
+- function:
+    name: "countVideos"
+    type: "countVideosType"
+    dataIns:
+    - name: "folder"
+      type: "string"
+      source: "objRecFC/folder"
+      passing: true
+    - name: "threshold"
+      type: "number"
+      source: "objRecFC/threshold"
+      passing: true
+    dataOuts:
+    - name: "numberVideos"
+      type: "number"
+    - name: "videos"
+      type: "collection"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- parallelFor:
+    name: "pForVideos"
+    dataIns:
+    - name: "videos"
+      type: "collection"
+      source: "countVideos/videos"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "folder"
+      type: "string"
+      source: "countVideos/folder"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "threshold"
+      type: "number"
+      source: "countVideos/threshold"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    loopCounter:
+      type: "number"
+      from: "0"
+      to: "countVideos/numberVideos"
+      step: "1"
+    loopBody:
+    - function:
+        name: "frameExtractor"
+        type: "frameExtractorType"
+        dataIns:
+        - name: "video"
+          type: "string"
+          source: "pForVideos/videos"
+        - name: "folder"
+          type: "string"
+          source: "pForVideos/folder"
+          passing: true
+        - name: "threshold"
+          type: "number"
+          source: "pForVideos/threshold"
+          passing: true
+        dataOuts:
+        - name: "frames"
+          type: "collection"
+        - name: "numberFrames"
+          type: "number"
+        - name: "frames2"
+          type: "collection"
+        properties:
+        - name: "resource"
+          value: "resourceLink"
+    - parallelFor:
+        name: "pForDeltas"
+        dataIns:
+        - name: "frames"
+          type: "collection"
+          source: "frameExtractor/frames"
+          constraints:
+          - name: "distribution"
+            value: "BLOCK(1)"
+        - name: "folder"
+          type: "string"
+          source: "frameExtractor/folder"
+          constraints:
+          - name: "distribution"
+            value: "REPLICATE(*)"
+        - name: "frames2"
+          type: "collection"
+          source: "frameExtractor/frames2"
+          constraints:
+          - name: "distribution"
+            value: "BLOCK(1)"
+        - name: "threshold"
+          type: "number"
+          source: "frameExtactor/threshold"
+          constraints:
+          - name: "distribution"
+            value: "REPLICATE(*)"
+        loopCounter:
+          type: "number"
+          from: "0"
+          to: "frameExtractor/numberFrames"
+          step: "1"
+        loopBody:
+        - function:
+            name: "deltaFinderRekog"
+            type: "deltaFinderRekogType"
+            dataIns:
+            - name: "frame1"
+              type: "string"
+              source: "pForDeltas/frames"
+            - name: "frame2"
+              type: "string"
+              source: "pForDeltas/frames2"
+            - name: "threshold"
+              type: "number"
+              source: "pForDeltas/threshold"
+            dataOuts:
+            - name: "dogs"
+              type: "number"
+            - name: "kids"
+              type: "number"
+            properties:
+            - name: "resource"
+              value: "resourceLink"
+        dataOuts:
+        - name: "dogs"
+          type: "collection"
+          source: "deltaFinderRekog/dogs"
+        - name: "kids"
+          type: "collection"
+          source: "deltaFinderRekog/kids"
+    - function:
+        name: "countPerVideo"
+        type: "countPerVideoType"
+        dataIns:
+        - name: "dogs"
+          type: "collection"
+          source: "pForDeltas/dogs"
+        - name: "kids"
+          type: "collection"
+          source: "pForDeltas/kids"
+        dataOuts:
+        - name: "dogs"
+          type: "number"
+        - name: "kids"
+          type: "number"
+        properties:
+        - name: "resource"
+          value: "resourceLink"
+    dataOuts:
+    - name: "kids"
+      type: "collection"
+      source: "countPerVideo/kids"
+    - name: "dogs"
+      type: "collection"
+      source: "countPerVideo/dogs"
+- function:
+    name: "outPerVideo"
+    type: "outPerVideoType"
+    dataIns:
+    - name: "kids"
+      type: "collection"
+      source: "pforVideos/kids"
+    - name: "dogs"
+      type: "collection"
+      source: "pForVideos/dogs"
+    dataOuts:
+    - name: "answer"
+      type: "string"
+dataOuts:
+- name: "answer"
+  type: "string"
+  source: "outPerVideo/answer"
