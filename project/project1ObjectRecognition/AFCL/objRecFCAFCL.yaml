@@ -1,24 +1,31 @@
 ---
 name: "objRecFC"
 dataIns:
-- name: "folder"
+- name: "folderVideos"
   type: "string"
-  source: "folder"
+  source: "folderVideos"
 - name: "threshold"
   type: "number"
   source: "threshold"
+- name: "folderFrames"
+  type: "collection"
+  source: "folderFrames"
 workflowBody:
 - function:
     name: "countVideos"
-    type: "countVideosType"
+    type: "Integer"
     dataIns:
-    - name: "folder"
+    - name: "folderVideos"
       type: "string"
-      source: "objRecFC/folder"
+      source: "objRecFC/folderVideos"
       passing: true
     - name: "threshold"
       type: "number"
       source: "objRecFC/threshold"
+      passing: true
+    - name: "folderFrames"
+      type: "collection"
+      source: "objRecFC/folderFrames"
       passing: true
     dataOuts:
     - name: "numberVideos"
@@ -32,14 +39,14 @@ workflowBody:
     name: "pForVideos"
     dataIns:
     - name: "videos"
-      type: "collection"
+      type: "string"
       source: "countVideos/videos"
       constraints:
       - name: "distribution"
         value: "BLOCK(1)"
-    - name: "folder"
+    - name: "folderVideos"
       type: "string"
-      source: "countVideos/folder"
+      source: "countVideos/folderVideos"
       constraints:
       - name: "distribution"
         value: "REPLICATE(*)"
@@ -49,26 +56,34 @@ workflowBody:
       constraints:
       - name: "distribution"
         value: "REPLICATE(*)"
+    - name: "folderFrames"
+      type: "string"
+      source: "countVideos/folderFrames"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
     loopCounter:
       type: "number"
-      from: "0"
       to: "countVideos/numberVideos"
       step: "1"
     loopBody:
     - function:
         name: "frameExtractor"
-        type: "frameExtractorType"
+        type: "collection"
         dataIns:
         - name: "video"
           type: "string"
           source: "pForVideos/videos"
-        - name: "folder"
+        - name: "folderVideos"
           type: "string"
-          source: "pForVideos/folder"
-          passing: true
+          source: "pForVideos/folderVideos"
         - name: "threshold"
           type: "number"
           source: "pForVideos/threshold"
+          passing: true
+        - name: "folderFrames"
+          type: "string"
+          source: "pForVideos/folderFrames"
           passing: true
         dataOuts:
         - name: "frames"
@@ -89,9 +104,9 @@ workflowBody:
           constraints:
           - name: "distribution"
             value: "BLOCK(1)"
-        - name: "folder"
+        - name: "folderFrames"
           type: "string"
-          source: "frameExtractor/folder"
+          source: "frameExtractor/folderFrames"
           constraints:
           - name: "distribution"
             value: "REPLICATE(*)"
@@ -109,13 +124,12 @@ workflowBody:
             value: "REPLICATE(*)"
         loopCounter:
           type: "number"
-          from: "0"
           to: "frameExtractor/numberFrames"
           step: "1"
         loopBody:
         - function:
             name: "deltaFinderRekog"
-            type: "deltaFinderRekogType"
+            type: "Collection"
             dataIns:
             - name: "frame1"
               type: "string"
@@ -126,6 +140,9 @@ workflowBody:
             - name: "threshold"
               type: "number"
               source: "pForDeltas/threshold"
+            - name: "folderFrames"
+              type: "string"
+              source: "pForDeltas/folderFrames"
             dataOuts:
             - name: "dogs"
               type: "number"
@@ -143,7 +160,7 @@ workflowBody:
           source: "deltaFinderRekog/kids"
     - function:
         name: "countPerVideo"
-        type: "countPerVideoType"
+        type: "int"
         dataIns:
         - name: "dogs"
           type: "collection"
@@ -168,7 +185,7 @@ workflowBody:
       source: "countPerVideo/dogs"
 - function:
     name: "outPerVideo"
-    type: "outPerVideoType"
+    type: "int"
     dataIns:
     - name: "kids"
       type: "collection"
