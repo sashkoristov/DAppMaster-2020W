@@ -1,0 +1,6 @@
+{
+	"fasta": "NC_000913.3.fasta",
+	"R1": "hipa7_reads_R1.fastq",
+	"R2": "hipa7_reads_R2.fastq",
+	"chunks": 8
+}

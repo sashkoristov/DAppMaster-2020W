@@ -1,0 +1,193 @@
+---
+name: "BWAFC"
+dataIns:
+- name: "fasta"
+  type: "string"
+  source: "fasta"
+- name: "R1"
+  type: "string"
+  source: "R1"
+- name: "R2"
+  type: "string"
+  source: "R2"
+- name: "chunks"
+  type: "number"
+  source: "chunks"
+workflowBody:
+- function:
+    name: "split"
+    type: "splitType"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "BWAFC/fasta"
+    - name: "R1"
+      type: "string"
+      source: "BWAFC/R1"
+      passing: true
+    - name: "R2"
+      type: "string"
+      source: "BWAFC/R2"
+      passing: true
+    - name: "chunks"
+      type: "number"
+      source: "BWAFC/chunks"
+    dataOuts:
+    - name: "fasta"
+      type: "collection"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- parallelFor:
+    name: "pFasta"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "split/fasta"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "R1"
+      type: "string"
+      source: "split/R1"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "R2"
+      type: "string"
+      source: "split/R2"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    loopCounter:
+      from: "0"
+      to: "split/chunks"
+      step: "1"
+    loopBody:
+    - function:
+        name: "bwaIndex"
+        type: "bwaIndexType"
+        dataIns:
+        - name: "fasta"
+          type: "string"
+          source: "pFasta/fasta"
+        - name: "R1"
+          type: "string"
+          source: "pFasta/R1"
+          passing: true
+        - name: "R2"
+          type: "string"
+          source: "pFasta/R2"
+          passing: true
+        dataOuts:
+        - name: "fastaIndexed"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "resourceLink"
+    - parallel:
+        name: "parALN"
+        dataIns:
+        - name: "fastaIndexed"
+          type: "string"
+          source: "bwaIndex/fastaIndexed"
+        - name: "R1"
+          type: "string"
+          source: "bwaIndex/R1"
+        - name: "R2"
+          type: "string"
+          source: "bwaIndex/R2"
+        parallelBody:
+        - section:
+          - function:
+              name: "bwaAlnR1"
+              type: "bwaAlnR1Type"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "parALN/fastaIndexed"
+                passing: true
+              - name: "R1"
+                type: "string"
+                source: "parALN/R1"
+                passing: true
+              dataOuts:
+              - name: "aln1"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+        - section:
+          - function:
+              name: "bwaAlnR2"
+              type: "bwaAlnR2Type"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "parALN/fastaIndexed"
+              - name: "R2"
+                type: "string"
+                source: "parALN/R2"
+                passing: true
+              dataOuts:
+              - name: "aln2"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+        dataOuts:
+        - name: "aln"
+          type: "collection"
+          source: "bwaAlnR1/fastaIndexed,bwaAlnR1/aln1,bwaAlnR2/aln2,bwaAlnR1/R1,bwaAlnR2/R2"
+    - function:
+        name: "bwaSampe"
+        type: "bwaSampeType"
+        dataIns:
+        - name: "aln"
+          type: "collection"
+          source: "parALN/aln"
+        dataOuts:
+        - name: "sam"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "resourceLink"
+    dataOuts:
+    - name: "sam"
+      type: "collection"
+      source: "bwaSampe/sam"
+- function:
+    name: "merge"
+    type: "mergeType"
+    dataIns:
+    - name: "sam"
+      type: "collection"
+      source: "pFasta/sam"
+    dataOuts:
+    - name: "samMerged"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- function:
+    name: "sort"
+    type: "sortType"
+    dataIns:
+    - name: "samMerged"
+      type: "string"
+      source: "merge/samMerged"
+    dataOuts:
+    - name: "bam"
+      type: "string"
+    - name: "bambai"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+dataOuts:
+- name: "bam"
+  type: "string"
+  source: "sort/bam"
+- name: "bambai"
+  type: "string"
+  source: "sort/bambai"

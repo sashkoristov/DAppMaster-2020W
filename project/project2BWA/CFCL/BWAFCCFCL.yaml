@@ -1,0 +1,1051 @@
+---
+name: "BWAFC"
+dataIns:
+- name: "fasta"
+  type: "string"
+  source: "fasta"
+- name: "R1"
+  type: "string"
+  source: "R1"
+- name: "R2"
+  type: "string"
+  source: "R2"
+- name: "folders"
+  type: "collection"
+  source: "folders"
+- name: "chunks"
+  type: "number"
+  source: "chunks"
+workflowBody:
+- function:
+    name: "split"
+    type: "splitType"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "BWAFC/fasta"
+    - name: "R1"
+      type: "string"
+      source: "BWAFC/R1"
+      passing: true
+    - name: "R2"
+      type: "string"
+      source: "BWAFC/R2"
+      passing: true
+    - name: "folders"
+      type: "collection"
+      source: "BWAFC/folders"
+    - name: "chunks"
+      type: "number"
+      source: "BWAFC/chunks"
+      passing: true
+    dataOuts:
+    - name: "fasta"
+      type: "collection"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- parallel:
+    name: "parallelized_pFasta"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "split/fasta"
+    - name: "R1"
+      type: "string"
+      source: "split/R1"
+    - name: "R2"
+      type: "string"
+      source: "split/R2"
+    parallelBody:
+    - section:
+      - parallelFor:
+          name: "pFasta_0"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "0"
+            to: "1"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_0"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_0/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_0/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_0/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_0"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_0/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_0/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_0/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_0"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_0/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_0/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_0"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_0/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_0/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_0/fastaIndexed,bwaAlnR1_0/aln1,bwaAlnR2/aln2,bwaAlnR1_0/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_0"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_0/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_0/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_1"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "1"
+            to: "2"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_1"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_1/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_1/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_1/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_1"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_1/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_1/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_1/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_1"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_1/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_1/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_1"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_1/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_1/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_1/fastaIndexed,bwaAlnR1_1/aln1,bwaAlnR2/aln2,bwaAlnR1_1/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_1"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_1/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_1/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_2"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "2"
+            to: "3"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_2"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_2/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_2/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_2/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_2"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_2/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_2/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_2/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_2"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_2/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_2/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_2"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_2/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_2/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_2/fastaIndexed,bwaAlnR1_2/aln1,bwaAlnR2/aln2,bwaAlnR1_2/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_2"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_2/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_2/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_3"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "3"
+            to: "4"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_3"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_3/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_3/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_3/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_3"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_3/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_3/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_3/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_3"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_3/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_3/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_3"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_3/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_3/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_3/fastaIndexed,bwaAlnR1_3/aln1,bwaAlnR2/aln2,bwaAlnR1_3/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_3"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_3/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_3/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_4"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "4"
+            to: "5"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_4"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_4/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_4/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_4/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_4"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_4/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_4/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_4/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_4"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_4/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_4/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_4"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_4/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_4/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_4/fastaIndexed,bwaAlnR1_4/aln1,bwaAlnR2/aln2,bwaAlnR1_4/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_4"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_4/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_4/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_5"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "5"
+            to: "6"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_5"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_5/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_5/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_5/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_5"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_5/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_5/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_5/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_5"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_5/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_5/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_5"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_5/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_5/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_5/fastaIndexed,bwaAlnR1_5/aln1,bwaAlnR2/aln2,bwaAlnR1_5/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_5"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_5/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_5/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_6"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "6"
+            to: "7"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_6"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_6/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_6/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_6/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_6"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_6/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_6/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_6/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_6"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_6/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_6/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_6"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_6/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_6/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_6/fastaIndexed,bwaAlnR1_6/aln1,bwaAlnR2/aln2,bwaAlnR1_6/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_6"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_6/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_6/sam"
+    - section:
+      - parallelFor:
+          name: "pFasta_7"
+          dataIns:
+          - name: "fasta"
+            type: "string"
+            source: "parallelized_pFasta/fasta"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "R1"
+            type: "string"
+            source: "parallelized_pFasta/R1"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "R2"
+            type: "string"
+            source: "parallelized_pFasta/R2"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "7"
+            to: "8"
+            step: "1"
+          loopBody:
+          - function:
+              name: "bwaIndex_7"
+              type: "bwaIndexType"
+              dataIns:
+              - name: "fasta"
+                type: "string"
+                source: "pFasta_7/fasta"
+              - name: "R1"
+                type: "string"
+                source: "pFasta_7/R1"
+                passing: true
+              - name: "R2"
+                type: "string"
+                source: "pFasta_7/R2"
+                passing: true
+              dataOuts:
+              - name: "fastaIndexed"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - parallel:
+              name: "parALN_7"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "bwaIndex_7/fastaIndexed"
+              - name: "R1"
+                type: "string"
+                source: "bwaIndex_7/R1"
+              - name: "R2"
+                type: "string"
+                source: "bwaIndex_7/R2"
+              parallelBody:
+              - section:
+                - function:
+                    name: "bwaAlnR1_7"
+                    type: "bwaAlnR1Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_7/fastaIndexed"
+                      passing: true
+                    - name: "R1"
+                      type: "string"
+                      source: "parALN_7/R1"
+                      passing: true
+                    dataOuts:
+                    - name: "aln1"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              - section:
+                - function:
+                    name: "bwaAlnR2_7"
+                    type: "bwaAlnR2Type"
+                    dataIns:
+                    - name: "fastaIndexed"
+                      type: "string"
+                      source: "parALN_7/fastaIndexed"
+                    - name: "R2"
+                      type: "string"
+                      source: "parALN_7/R2"
+                      passing: true
+                    dataOuts:
+                    - name: "aln2"
+                      type: "string"
+                    properties:
+                    - name: "resource"
+                      value: "resourceLink"
+              dataOuts:
+              - name: "aln"
+                type: "collection"
+                source: "bwaAlnR1_7/fastaIndexed,bwaAlnR1_7/aln1,bwaAlnR2/aln2,bwaAlnR1_7/R1,bwaAlnR2/R2"
+          - function:
+              name: "bwaSampe_7"
+              type: "bwaSampeType"
+              dataIns:
+              - name: "aln"
+                type: "collection"
+                source: "parALN_7/aln"
+              dataOuts:
+              - name: "sam"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "sam"
+            type: "collection"
+            source: "bwaSampe_7/sam"
+    dataOuts:
+    - name: "OutVal"
+      type: "collection"
+      source: "pFasta_0/sam,pFasta_1/sam,pFasta_2/sam,pFasta_3/sam,pFasta_4/sam,pFasta_5/sam,pFasta_6/sam,pFasta_7/sam"
+- function:
+    name: "merge"
+    type: "mergeType"
+    dataIns:
+    - name: "sam"
+      type: "collection"
+      source: "parallelized_pFasta/OutVal"
+    dataOuts:
+    - name: "samMerged"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- function:
+    name: "sort"
+    type: "sortType"
+    dataIns:
+    - name: "samMerged"
+      type: "string"
+      source: "merge/samMerged"
+    dataOuts:
+    - name: "bam"
+      type: "string"
+    - name: "bambai"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+dataOuts:
+- name: "bam"
+  type: "string"
+  source: "sort/bam"
+- name: "bambai"
+  type: "string"
+  source: "sort/bambai"
