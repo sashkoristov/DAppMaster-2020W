@@ -10,6 +10,9 @@ dataIns:
 - name: "R2"
   type: "string"
   source: "R2"
+- name: "folders"
+  type: "collection"
+  source: "folders"
 - name: "chunks"
   type: "number"
   source: "chunks"
@@ -29,9 +32,13 @@ workflowBody:
       type: "string"
       source: "BWAFC/R2"
       passing: true
+    - name: "folders"
+      type: "collection"
+      source: "BWAFC/folders"
     - name: "chunks"
       type: "number"
       source: "BWAFC/chunks"
+      passing: true
     dataOuts:
     - name: "fasta"
       type: "collection"
