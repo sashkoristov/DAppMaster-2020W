@@ -18,15 +18,27 @@ As most IoT devices, the camera does not do any preprocessing. Therefore the vid
 
 Your FC should efficiently detect at which times of the day your kid or dog appeared. It should be scalable (with number of videos) and cost-efficient (do with as few expensive tasks - Image recognition - as possible).
 
-### Input 
+### Given files 
 
-A folder of videos of that day on the storage.
+A folder of videos of that day on S3.
 
-```
-└── your-video-bucket
-    ├── 1604670378.mp4
-    └── 1604670406.mp4
-```
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603365437.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603366941.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603376072.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603377206.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379182.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379635.mp4
+
+└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603380451.mp4
+
+Credit: [The Fletchers - YouTube](https://www.youtube.com/channel/UCOaIS5-uqsnXih19vIuNLmQ)
+
 
 
 ### Rough steps 
@@ -122,20 +134,21 @@ This has to happen as fast as possible from when the sample arrives. Ecoli DNA i
 Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumina.com/systems/sequencing-platforms/miseq.html) to read ('sequence') the [basepairs](https://en.wikipedia.org/wiki/Base_pair#Examples) of the DNA. 
 
 
-### Input
+### Given files
 
 
-```
-└── your-bucket
-    ├── NC_000913.3.fasta  
-    └── reads
-        ├── hipa7_reads_R1.fastq
-        └── hipa7_reads_R2.fastq
-```
 
-* A [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
-* A FASTQ text file (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA') of your Ecoli sample, obtained from the MiSeq.
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/NC_000913.3-hipA7.fasta 
 
+└── reads
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R1.fastq
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R2.fastq
+
+
+* One [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
+* Two FASTQ text files (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA', respectively) of your Ecoli sample, obtained from the MiSeq.
 
 
 ### Rough steps
