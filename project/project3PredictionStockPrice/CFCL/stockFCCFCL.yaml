@@ -1,0 +1,488 @@
+---
+name: "stockFC"
+dataIns:
+- name: "stockTickers"
+  type: "collection"
+  source: "stockTickers"
+- name: "folder"
+  type: "collection"
+workflowBody:
+- function:
+    name: "fetchProcess"
+    type: "fetchProcessType"
+    dataIns:
+    - name: "stockTickers"
+      type: "collection"
+      source: "stockFC/stockTickers"
+      passing: true
+    dataOuts:
+    - name: "prices"
+      type: "collection"
+    - name: "tickerNumber"
+      type: "number"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+- parallel:
+    name: "parallelized_pTicker"
+    dataIns:
+    - name: "stockTickers"
+      type: "string"
+      source: "fetchProcess/stockTickers"
+    - name: "prices"
+      type: "collection"
+      source: "fetchProcess/prices"
+    parallelBody:
+    - section:
+      - parallelFor:
+          name: "pTicker_0"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "0"
+            to: "1000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_0"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_0/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_0/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_0"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_0/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_1"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "1000"
+            to: "2000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_1"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_1/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_1/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_1"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_1/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_2"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "2000"
+            to: "3000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_2"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_2/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_2/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_2"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_2/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_3"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "3000"
+            to: "4000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_3"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_3/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_3/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_3"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_3/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_4"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "4000"
+            to: "5000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_4"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_4/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_4/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_4"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_4/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_5"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "5000"
+            to: "6000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_5"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_5/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_5/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_5"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_5/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_6"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "6000"
+            to: "7000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_6"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_6/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_6/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_6"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_6/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    - section:
+      - parallelFor:
+          name: "pTicker_7"
+          dataIns:
+          - name: "stockTickers"
+            type: "string"
+            source: "parallelized_pTicker/stockTickers"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "prices"
+            type: "collection"
+            source: "parallelized_pTicker/prices"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          loopCounter:
+            from: "7000"
+            to: "8000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "forecast_7"
+              type: "forecastType"
+              dataIns:
+              - name: "prices"
+                type: "collection"
+                source: "pTicker_7/prices"
+              - name: "ticker"
+                type: "string"
+                source: "pTicker_7/stockTickers"
+              dataOuts:
+              - name: "predictedPrices"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          - function:
+              name: "processResult_7"
+              type: "processResultType"
+              dataIns:
+              - name: "predictedPrices"
+                type: "collection"
+                source: "forecast_7/predictedPrices"
+              dataOuts:
+              - name: "predictedPricesProcessed"
+                type: "collection"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "predictedPricesProcessed"
+            type: "collection"
+            source: "processResult"
+    dataOuts:
+    - name: "OutVal"
+      type: "collection"
+      source: "pTicker_0/predictedPricesProcessed,pTicker_1/predictedPricesProcessed,pTicker_2/predictedPricesProcessed,pTicker_3/predictedPricesProcessed,pTicker_4/predictedPricesProcessed,pTicker_5/predictedPricesProcessed,pTicker_6/predictedPricesProcessed,pTicker_7/predictedPricesProcessed"
+- function:
+    name: "createChart"
+    type: "createChartType"
+    dataIns:
+    - name: "predictedPricesProcessed"
+      type: "collection"
+      source: "parallelized_pTicker/OutVal"
+    dataOuts:
+    - name: "charts"
+      type: "collection"
+    properties:
+    - name: "resource"
+      value: "resourceLink"
+dataOuts:
+- name: "charts"
+  type: "collection"
+  source: "createChart/charts"
