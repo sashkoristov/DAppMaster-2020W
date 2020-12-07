@@ -264,7 +264,7 @@ Read this paper's ([Korch, Hill. 2003](https://onlinelibrary.wiley.com/doi/full/
 Now we'll get to work. Download and start the [Integrative Genomics Viewer](https://software.broadinstitute.org/software/igv/download). 
 
 1. Select the Ecoli reference genome (`NC_000913.3`) (Marker 1)
-1. Import your reads with File > Load from file > Your `.bam` file
+1. Import your alignments with File > Load from file > Your `.bam` file (produced by the script)
 1. Jump to the gene you're interested in (Marker 2, Marker 5)
 
 You can see your reads as grey bars in Marker 4. The arrow tips indicate read direction. A letter means the read is different to the reference genome in that spot. The more reads agree on a difference, the more confident you can be it is not just noise.
