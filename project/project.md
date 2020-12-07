@@ -233,7 +233,10 @@ We recommend to write a simple abstraction that stashes & fetches the `tmp` fold
 
 #### Split `Storage` 
 
-This function should split the reference genome `NC_000913.3.fasta` into smaller parts. You can use any library, binary, or shell command you find online to split FASTQ or FASTA files.
+This function should create splits of the reference genome `NC_000913.3.fasta`. Every split should be identical to the reference genome file, except that bases outside the split's window are replaced (masked) with `N` (null character).
+
+Hints: 
+* Count characters with `wc --chars` after splitting to ensure you didn't drop any.
 
 #### bwa index `Storage`
 
@@ -252,18 +255,19 @@ Hints:
 
 This function should run `bwa sampe` (**sam**-**p**aired-**e**nd) for the `.sai` pair created in the previous step (R1 and R2). This will put the aligned reads into one `.sam` file.
 
+#### samtools view, index
+
+This function should run `samtools view` to create to a `.bam` file (compressed representation) and then `samtools index` to create a `.bam.bai` file (makes it searchable).
+
 #### samtools merge
 
-This function should run `samtools merge` to concat the `.sam` file of each reference genome split.
+This function should run `samtools merge` to concat the `.bam` files of the reference genome splits.
 
-#### samtools sort, view, index
+#### samtools index
 
-This function should run `samtools sort` to sort the `.sam` file.
-Then, run `samtools view` to convert to a binary representation (`.bam` file).
-Then, run `samtools index` created an index `.bam.bai` file.
+This function should run `samtools index` again on the merged `.bam` file to create a `.bam.bai` file.
 
-
-Keep the `.bam` and `.bam.bai` file for Week C.
+Keep these two files for Week C.
 
 
 ### Investigate with IGV
