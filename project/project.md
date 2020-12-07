@@ -220,7 +220,10 @@ We recommend to write a simple abstraction that stashes & fetches the `tmp` fold
 
 #### Split `Storage` 
 
-This function should split the reference genome `NC_000913.3.fasta` into smaller parts. You can use any library, binary, or shell command you find online to split FASTQ or FASTA files.
+This function should create splits of the reference genome `NC_000913.3.fasta`. Every split should be identical to the reference genome file, except that bases outside the split's window are replaced (masked) with `N` (null character).
+
+Hints: 
+* Count characters with `wc --chars` after splitting to ensure you didn't drop any.
 
 #### bwa index `Storage`
 
