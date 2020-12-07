@@ -1,0 +1,146 @@
+---
+name: "GCAFC"
+dataIns:
+- name: "flightID"
+  type: "string"
+  source: "flightID"
+workflowBody:
+- parallel:
+    name: "parRetr"
+    dataIns:
+    - name: "flightID"
+      type: "string"
+      source: "GCAFC/flightID"
+    parallelBody:
+    - section:
+      - function:
+          name: "getPassengers"
+          type: "getPassengersType"
+          dataIns:
+          - name: "flightID"
+            type: "string"
+            source: "parRetr/flightID"
+          dataOuts:
+          - name: "passengerIDs"
+            type: "collection"
+          - name: "passengersAtAirport"
+            type: "number"
+    - section:
+      - function:
+          name: "getNewGate"
+          type: "getNewGateType"
+          dataIns:
+          - name: "flightID"
+            type: "string"
+            source: "GCAFC/flightID"
+          dataOuts:
+          - name: "newGate"
+            type: "string"
+      - function:
+          name: "secCheckTime"
+          type: "secCheckTimeType"
+          dataIns:
+          - name: "gate"
+            type: "string"
+            source: "getNewGate/newGate"
+          dataOuts:
+          - name: "timeSec2Gate"
+            type: "number"
+          - name: "gpsGate"
+            type: "string"
+    dataOuts:
+    - name: "passengerIDs"
+      type: "collection"
+      source: "getPassengers/passengerIDs"
+    - name: "timeSec2Gate"
+      type: "number"
+      source: "secCheckTime/timeSec2Gate"
+    - name: "passengersAtAirport"
+      type: "number"
+      source: "getPassengers/passengersAtAirport"
+    - name: "gpsGate"
+      type: "string"
+      source: "secCheckTime/gpsGate"
+- parallelFor:
+    name: "pPass"
+    dataIns:
+    - name: "passengerIDs"
+      type: "number"
+      source: "parRetr/passengerIDs"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "gpsGate"
+      type: "string"
+      source: "parRetr/gpsGate"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "timeSec2Gate"
+      type: "number"
+      source: "parRetr/timeSec2Gate"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    loopCounter:
+      from: "0"
+      to: "parRetr/passengersAtAirport"
+      step: "1"
+    loopBody:
+    - function:
+        name: "readGPS"
+        type: "readGPSType"
+        dataIns:
+        - name: "passengerIDs"
+          type: "number"
+          source: "pPass/passengerIDs"
+        - name: "gpsGate"
+          type: "string"
+          source: "pPass/gpsGate"
+          passing: true
+        - name: "timeSec2Gate"
+          type: "number"
+          source: "pPass/timeSec2Gate"
+          passing: true
+        dataOuts:
+        - name: "gpsPassenger"
+          type: "string"
+        - name: "area"
+          type: "string"
+    - function:
+        name: "calcTime2Gate"
+        type: "calcTime2GateType"
+        dataIns:
+        - name: "gpsPassenger"
+          type: "string"
+          source: "readGPS/GPS"
+        - name: "area"
+          type: "string"
+          source: "readGPS/area"
+        - name: "gpsGate"
+          type: "string"
+          source: "ParallelFor/gpsGate"
+        - name: "timeSec2Gate"
+          type: "number"
+          source: "readGPS/timeSec2Gate"
+        dataOuts:
+        - name: "time2Gate"
+          type: "number"
+    dataOuts:
+    - name: "time2Gate"
+      type: "collection"
+      source: "calcTime2Gate/time2Gate"
+- function:
+    name: "averageTime"
+    type: "averageTimeType"
+    dataIns:
+    - name: "time2Gate"
+      type: "collection"
+      source: "pPass/time2Gate"
+    dataOuts:
+    - name: "averageTime"
+      type: "number"
+dataOuts:
+- name: "averageTime"
+  type: "number"
+  source: "averageTime/averageTime"

@@ -1,0 +1,654 @@
+---
+name: "GCAFC"
+dataIns:
+- name: "flightID"
+  type: "string"
+  source: "flightID"
+workflowBody:
+- parallel:
+    name: "parRetr"
+    dataIns:
+    - name: "flightID"
+      type: "string"
+      source: "GCAFC/flightID"
+    parallelBody:
+    - section:
+      - function:
+          name: "getPassengers"
+          type: "getPassengersType"
+          dataIns:
+          - name: "flightID"
+            type: "string"
+            source: "parRetr/flightID"
+          dataOuts:
+          - name: "passengerIDs"
+            type: "collection"
+          - name: "passengersAtAirport"
+            type: "number"
+    - section:
+      - function:
+          name: "getNewGate"
+          type: "getNewGateType"
+          dataIns:
+          - name: "flightID"
+            type: "string"
+            source: "GCAFC/flightID"
+          dataOuts:
+          - name: "newGate"
+            type: "string"
+      - function:
+          name: "secCheckTime"
+          type: "secCheckTimeType"
+          dataIns:
+          - name: "gate"
+            type: "string"
+            source: "getNewGate/newGate"
+          dataOuts:
+          - name: "timeSec2Gate"
+            type: "number"
+          - name: "gpsGate"
+            type: "string"
+    dataOuts:
+    - name: "passengerIDs"
+      type: "collection"
+      source: "getPassengers/passengerIDs"
+    - name: "timeSec2Gate"
+      type: "number"
+      source: "secCheckTime/timeSec2Gate"
+    - name: "passengersAtAirport"
+      type: "number"
+      source: "getPassengers/passengersAtAirport"
+    - name: "gpsGate"
+      type: "string"
+      source: "secCheckTime/gpsGate"
+- parallel:
+    name: "parallelized_pPass"
+    dataIns:
+    - name: "passengerIDs"
+      type: "number"
+      source: "parRetr/passengerIDs"
+    - name: "gpsGate"
+      type: "string"
+      source: "parRetr/gpsGate"
+    - name: "timeSec2Gate"
+      type: "number"
+      source: "parRetr/timeSec2Gate"
+    parallelBody:
+    - section:
+      - parallelFor:
+          name: "pPass_0"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "0"
+            to: "1000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_0"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_0/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_0/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_0/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_0"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_0/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_0/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_0/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_0/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_1"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "1000"
+            to: "2000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_1"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_1/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_1/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_1/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_1"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_1/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_1/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_1/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_1/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_2"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "2000"
+            to: "3000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_2"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_2/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_2/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_2/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_2"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_2/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_2/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_2/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_2/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_3"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "3000"
+            to: "4000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_3"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_3/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_3/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_3/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_3"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_3/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_3/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_3/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_3/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_4"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "4000"
+            to: "5000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_4"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_4/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_4/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_4/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_4"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_4/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_4/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_4/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_4/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_5"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "5000"
+            to: "6000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_5"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_5/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_5/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_5/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_5"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_5/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_5/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_5/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_5/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_6"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "6000"
+            to: "7000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_6"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_6/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_6/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_6/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_6"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_6/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_6/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_6/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_6/time2Gate"
+    - section:
+      - parallelFor:
+          name: "pPass_7"
+          dataIns:
+          - name: "passengerIDs"
+            type: "number"
+            source: "parallelized_pPass/passengerIDs"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+          - name: "gpsGate"
+            type: "string"
+            source: "parallelized_pPass/gpsGate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          - name: "timeSec2Gate"
+            type: "number"
+            source: "parallelized_pPass/timeSec2Gate"
+            constraints:
+            - name: "distribution"
+              value: "REPLICATE(*)"
+          loopCounter:
+            from: "7000"
+            to: "8000"
+            step: "1"
+          loopBody:
+          - function:
+              name: "readGPS_7"
+              type: "readGPSType"
+              dataIns:
+              - name: "passengerIDs"
+                type: "number"
+                source: "pPass_7/passengerIDs"
+              - name: "gpsGate"
+                type: "string"
+                source: "pPass_7/gpsGate"
+                passing: true
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "pPass_7/timeSec2Gate"
+                passing: true
+              dataOuts:
+              - name: "gpsPassenger"
+                type: "string"
+              - name: "area"
+                type: "string"
+          - function:
+              name: "calcTime2Gate_7"
+              type: "calcTime2GateType"
+              dataIns:
+              - name: "gpsPassenger"
+                type: "string"
+                source: "readGPS_7/GPS"
+              - name: "area"
+                type: "string"
+                source: "readGPS_7/area"
+              - name: "gpsGate"
+                type: "string"
+                source: "ParallelFor/gpsGate"
+              - name: "timeSec2Gate"
+                type: "number"
+                source: "readGPS_7/timeSec2Gate"
+              dataOuts:
+              - name: "time2Gate"
+                type: "number"
+          dataOuts:
+          - name: "time2Gate"
+            type: "collection"
+            source: "calcTime2Gate_7/time2Gate"
+    dataOuts:
+    - name: "OutVal"
+      type: "collection"
+      source: "pPass_0/time2Gate,pPass_1/time2Gate,pPass_2/time2Gate,pPass_3/time2Gate,pPass_4/time2Gate,pPass_5/time2Gate,pPass_6/time2Gate,pPass_7/time2Gate"
+- function:
+    name: "averageTime"
+    type: "averageTimeType"
+    dataIns:
+    - name: "time2Gate"
+      type: "collection"
+      source: "parallelized_pPass/OutVal"
+    dataOuts:
+    - name: "averageTime"
+      type: "number"
+dataOuts:
+- name: "averageTime"
+  type: "number"
+  source: "averageTime/averageTime"
