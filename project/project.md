@@ -190,6 +190,8 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 * Two FASTQ text files (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA', respectively) of your Ecoli sample, obtained from the MiSeq.
 
 
+
+
 ### Rough steps
 
 ```sh
@@ -237,7 +239,8 @@ We know that a `C` mutation at the fourth<br> position leads to brown eyes. Now 
 
 ### Hints
 
-This FC is all about file management at scale. Assume that every step (`bwa index`, `bwa aln` and so on) produces new files that the next step needs.
+* You can at any point make `.sam` and `.bam` files much smaller by filtering out unaligned reads: `samtools view -b -F 4 file.bam/.sam > slimfile.bam/.sam`. It is idempotent.
+* This FC is all about file management at scale. Assume that every step (`bwa index`, `bwa aln` and so on) produces new files that the next step needs.
 Furthermore, the parallelFor produces files with the same name.
 
 
@@ -369,6 +372,7 @@ Check the gene for these two mutations. Is your Ecoli sample resistant to antibi
 ## MS4 (21.01.2021, Homework 07)
 
 Develop the given scheduler to schedule the FC across all function deployments.
+Based on the output of the scheduler, build a CFCL file by adapting the parallelFor as you learned in Homework 04. 
 
 Details will be given with Homework 07.
 
@@ -401,59 +405,62 @@ This should be done in parallel, per stock. The result should be visualised toge
 * A list of stock ticker symbols traded on some exchange.
 
 
+
 ### Rough steps
 
 * Pull commodity prices to the storage
-* Enter them into AWS Forecast
 * Forecast for the coming year for each commodity
 * Create a chart showing the past and future price of all commodities.
 
-## MS2 (17.12.2020): Develop the FC with AFCL
 
-Develop the preliminary FC with AFCL. 
+## MS2 (17.12.2020): Analyze the given FC with AFCL
 
-Think about these things:
 
-* How to group the above algorithm into functions 
-* What you can do in parallel; what is independent from each other
-* What information each function needs, how you best represent it (Storage ARNs, collections thereof, named fields)
-* How information flows between your functions
-
-Put together the FC using the FC editor, AFCL Java API, or the YAML editor. The main goal is to think about modularity and data flow. 
-
-Create empty functions that just produce the data how you specified with AFCL. Run the FC with these functions with the *xAFCL* Enactment Engine.
+The given FC receives a single collection stockTickers and the folder of a storage where to store the pulled data.
 
 
 ## MS3 (07.01.2021, Homework 06): Code the functions + deploy them on across ultiple regions with a Terraform script
 
 Details will be given with Homework 06.
 
-### Rough functions
+### Functions
 
-#### Fetch and process `Storage, API`
+#### Fetch and process (`fetchProcess`)
 
-Pull the historical daily prices of each stock in parallel to the storage. You can use [AlphaVantage](https://www.alphavantage.co/) to retrieve time series of prices.
+This function should pull the historical daily prices of each stock in parallel to the storage. You can use [AlphaVantage](https://www.alphavantage.co/) to retrieve time series of prices.
 You may have to do some processing, such as stripping unnecessary fields. It is up to you what exactly you want to predict, what pre-processing or enriching you do, how you pick related data, and so on.
 
 Hints:
 * If you want to incorporate market sentiment at that time, [this may help](https://raw.githubusercontent.com/qngapparat/sentim/master/python/qmarketin500.csv).
 
-#### Enter into Forecast `Storage, Forecast`
+The function gets the input from the FC and returns a collection of prices (locations on the storage) and how many are they. 
 
-Enter the historical data for given commodity into AWS Forecast.
+After this function, the parallelFor pTicker starts for each stock ticker.
 
-#### Start `Storage, Forecast`
+Optional: 
+* In case you download huge amount of data, you may want to distribute the data across storages in multiple regions so that other functions access data from the storage in the corresponding region. In such case, see the FC of project 1 (folderFrames).
 
-Start the forecast for given commidity, and move the results to a file on the storage. 
+#### Forecast (`Forecast`)
+
+Start the forecast for given commidity and move the results to a file on the storage. 
+
+The function gets a location of the prices and their Ticker and returns the link where the predicted prices are stored. Since we run in parallel, each instance will store a single file with predicted prices for the given Ticker.
 
 <!--Hints:
 * Since you will be generating JavaScript code, it's useful to code this function in NodeJS
 -->
-#### Process result `Storage`
 
-Fetch the result file for given commodity from the storage and prepare it for visualisation. Strip fields that you aren't interested in. Save it in a way that's easy to read for the following step.
 
-#### Create chart `Storage, charting library or API`
+
+#### Process result (`processResult`)
+
+Fetch the result file for the given commodity from the storage and prepare it for visualisation. Strip fields that you aren't interested in. Save it in a way that's easy to read for the following step.
+
+This function gets a link to the file with predicted prices and returns another link (processed predicted prices).
+
+#### Create chart (`createChart`)
+
+This function gets the list of processed predicted prices (locations) and returns a collection of locations for charts.
 
 Fetch all the result files, and create one or more charts that visualizes the past and projected price of the stocks.
 Again, you have plenty leeway what you want to do here.
@@ -466,6 +473,7 @@ Hints:
 ## MS4 (21.01.2021, Homework 07)
 
 Develop the given scheduler to schedule the FC across all function deployments.
+Based on the output of the scheduler, build a CFCL file by adapting the parallelFor as you learned in Homework 04. 
 
 Details will be given with Homework 07.
 
@@ -554,6 +562,7 @@ Hints:
 ## MS4 (21.01.2021, Homework 07)
 
 Develop the given scheduler to schedule the FC across all function deployments.
+Based on the output of the scheduler, build a CFCL file by adapting the parallelFor as you learned in Homework 04. 
 
 Details will be given with Homework 07.
 

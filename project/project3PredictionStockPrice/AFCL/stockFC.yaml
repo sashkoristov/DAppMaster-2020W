@@ -4,6 +4,9 @@ dataIns:
 - name: "stockTickers"
   type: "collection"
   source: "stockTickers"
+- name: "folder"
+  type: "string"
+  source: "folder"
 workflowBody:
 - function:
     name: "fetchProcess"
@@ -12,6 +15,10 @@ workflowBody:
     - name: "stockTickers"
       type: "collection"
       source: "stockFC/stockTickers"
+      passing: true
+    - name: "folder"
+      type: "string"
+      source: "stockFC/folder"
       passing: true
     dataOuts:
     - name: "prices"
@@ -46,14 +53,14 @@ workflowBody:
         type: "forecastType"
         dataIns:
         - name: "prices"
-          type: "collection"
+          type: "string"
           source: "pTicker/prices"
         - name: "ticker"
           type: "string"
           source: "pTicker/stockTickers"
         dataOuts:
         - name: "predictedPrices"
-          type: "collection"
+          type: "string"
         properties:
         - name: "resource"
           value: "resourceLink"
@@ -62,11 +69,11 @@ workflowBody:
         type: "processResultType"
         dataIns:
         - name: "predictedPrices"
-          type: "collection"
+          type: "string"
           source: "forecast/predictedPrices"
         dataOuts:
         - name: "predictedPricesProcessed"
-          type: "collection"
+          type: "string"
         properties:
         - name: "resource"
           value: "resourceLink"
