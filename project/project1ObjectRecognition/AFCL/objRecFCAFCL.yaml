@@ -13,7 +13,7 @@ dataIns:
 workflowBody:
 - function:
     name: "countVideos"
-    type: "Integer"
+    type: "countVideosType"
     dataIns:
     - name: "folderVideos"
       type: "string"
@@ -69,7 +69,7 @@ workflowBody:
     loopBody:
     - function:
         name: "frameExtractor"
-        type: "collection"
+        type: "frameExtractorType"
         dataIns:
         - name: "video"
           type: "string"
@@ -129,7 +129,7 @@ workflowBody:
         loopBody:
         - function:
             name: "deltaFinderRekog"
-            type: "Collection"
+            type: "deltaFinderRekogType"
             dataIns:
             - name: "frame1"
               type: "string"
@@ -160,7 +160,7 @@ workflowBody:
           source: "deltaFinderRekog/kids"
     - function:
         name: "countPerVideo"
-        type: "int"
+        type: "countPerVideoType"
         dataIns:
         - name: "dogs"
           type: "collection"
@@ -185,7 +185,7 @@ workflowBody:
       source: "countPerVideo/dogs"
 - function:
     name: "outPerVideo"
-    type: "int"
+    type: "outPerVideoType"
     dataIns:
     - name: "kids"
       type: "collection"
