@@ -325,9 +325,10 @@ This function should run `bwa sampe` (**sam**-**p**aired-**e**nd) for the `.sai`
 Notes:
 * Check the command for sampe. It requires five files, which are described as dataIns in the FC.
 
-<!--- #### samtools view, index -->
+<!--- #### samtools view, index 
 
 This function should also run `samtools view` to create a `.bam` file (compressed representation) and then `samtools index` to create a `.bam.bai` file (makes it searchable).
+-->
 
 Here the parallelFor finishes.
 
@@ -335,11 +336,13 @@ Here the parallelFor finishes.
 
 This function should run `samtools merge` to concat the `.bam` files of the reference genome splits.
 
-#### samtools index (`sort`)
+#### samtools sort, view, index (`sort`)
 
-This function should run `samtools index` again on the merged `.bam` file to create a `.bam.bai` file.
+his function should run `samtools sort` to sort the `.sam` file.
+Then, run `samtools view` to convert to a binary representation (`.bam` file).
+Then, run `samtools index` to create an index (`.bam.bai` file).
 
-Keep these two files for visualization.
+Keep `.bam` and `.bam.bai` files for visualization.
 
 
 ### Investigate with IGV
