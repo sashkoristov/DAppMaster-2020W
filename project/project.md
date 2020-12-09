@@ -22,20 +22,15 @@ Your FC should efficiently detect at which times of the day your kid or dog appe
 
 A folder of videos of that day on S3. You can store videos on IBM Object storage, as well. More videos can be used or make a copy of the existing ones in order to have at least 8 videos, one for each region / function deployment (See Homework 07).
 
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603365437.mp4
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603366941.mp4
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603376072.mp4
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603377206.mp4
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379182.mp4
-
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379635.mp4
-
-└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603380451.mp4
+. | bucket | key
+--- | ----- | ----
+├── | `distributed-systems-materials` | `OBJR/1603365437.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603366941.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603376072.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603377206.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603379182.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603379635.mp4`
+├── | `distributed-systems-materials` | `OBJR/1603380451.mp4`
 
 Credit: [The Fletchers - YouTube](https://www.youtube.com/channel/UCOaIS5-uqsnXih19vIuNLmQ)
 
@@ -71,7 +66,7 @@ Create empty functions that just produce the data how you specified with AFCL. R
 ## MS2 (17.12.2020): Analyze the given FC with AFCL
 
 The given FC receives three inputs:
-- folderVideos, where the input videos are stored. For the given videos, the folder will be "https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/".
+- folderVideos, where the input videos are stored. 
 - folderFrames, where the frames of each video will be stored. The idea is that when you run on multiple regions, to store images on the closer storage. Replace f1, f2, ..., f8 with the folders of the corresponding regions in the input. 
 - threshold for the confidence
 
@@ -177,13 +172,11 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 
 ### Given files
 
-├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/NC_000913.3-hipA7.fasta 
-
-└── reads
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R1.fastq
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R2.fastq
+. | bucket | key
+--- | ----- | ----
+├── | `distributed-systems-materials` | `BWA/NC_000913.3-hipA7.fasta`
+└── reads | `distributed-systems-materials` | `BWA/reads/hipa7_reads_R1.fastq`
+└── reads | `distributed-systems-materials` | `BWA/reads/hipa7_reads_R2.fastq`
 
 
 * One [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
