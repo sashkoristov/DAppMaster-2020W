@@ -4,6 +4,12 @@ dataIns:
 - name: "flightID"
   type: "string"
   source: "flightID"
+- name: "newGate"
+  type: "string"
+  source: "newGate"
+- name: "security"
+  type: "string"
+  source: "security"
 workflowBody:
 - parallel:
     name: "parRetr"
@@ -11,6 +17,12 @@ workflowBody:
     - name: "flightID"
       type: "string"
       source: "GCAFC/flightID"
+    - name: "newGate"
+      type: "string"
+      source: "GCAFC/newGate"
+    - name: "security"
+      type: "string"
+      source: "GCAFC/security"
     parallelBody:
     - section:
       - function:
@@ -27,40 +39,68 @@ workflowBody:
             type: "number"
     - section:
       - function:
-          name: "getNewGate"
-          type: "getNewGateType"
-          dataIns:
-          - name: "flightID"
-            type: "string"
-            source: "GCAFC/flightID"
-          dataOuts:
-          - name: "newGate"
-            type: "string"
-      - function:
           name: "secCheckTime"
           type: "secCheckTimeType"
           dataIns:
+          - name: "security"
+            type: "string"
+            source: "parRetr/security"
+          dataOuts:
+          - name: "securityDelay"
+            type: "number"
+    - section:
+      - function:
+          name: "getGateGPS"
+          type: "getGateGPSType"
+          dataIns:
           - name: "gate"
             type: "string"
-            source: "getNewGate/newGate"
+            source: "parRetr/newGate"
           dataOuts:
-          - name: "timeSec2Gate"
-            type: "number"
-          - name: "gpsGate"
+          - name: "newGateGPS"
             type: "string"
+          - name: "securityGPS"
+            type: "string"
+      - function:
+          name: "distanceGPS"
+          type: "distanceGPSType"
+          dataIns:
+          - name: "gps1"
+            type: "string"
+            source: "getGateGPS/newGateGPS"
+          - name: "gps2"
+            type: "string"
+            source: "getGateGPS/securityGPS"
+          - name: "newGateGPS"
+            type: "string"
+            source: "getGateGPS/newGateGPS"
+            passing: true
+          - name: "securityGPS"
+            type: "string"
+            source: "getGateGPS/securityGPS"
+            passing: true
+          dataOuts:
+          - name: "delay"
+            type: "number"
     dataOuts:
     - name: "passengerIDs"
       type: "collection"
       source: "getPassengers/passengerIDs"
-    - name: "timeSec2Gate"
+    - name: "securityDelay"
       type: "number"
-      source: "secCheckTime/timeSec2Gate"
+      source: "secCheckTime/securityDelay"
     - name: "passengersAtAirport"
       type: "number"
       source: "getPassengers/passengersAtAirport"
-    - name: "gpsGate"
+    - name: "gpsNewGate"
       type: "string"
-      source: "secCheckTime/gpsGate"
+      source: "distanceGPS/newGateGPS"
+    - name: "secGateDelay"
+      type: "number"
+      source: "distanceGPS/delay"
+    - name: "securityGPS"
+      type: "string"
+      source: "distanceGPS/securityGPS"
 - parallelFor:
     name: "pPass"
     dataIns:
@@ -70,15 +110,27 @@ workflowBody:
       constraints:
       - name: "distribution"
         value: "BLOCK(1)"
-    - name: "gpsGate"
+    - name: "gpsNewGate"
       type: "string"
-      source: "parRetr/gpsGate"
+      source: "parRetr/gpsNewGate"
       constraints:
       - name: "distribution"
         value: "REPLICATE(*)"
-    - name: "timeSec2Gate"
+    - name: "securityDelay"
       type: "number"
-      source: "parRetr/timeSec2Gate"
+      source: "parRetr/securityDelay"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "secGateDelay"
+      type: "number"
+      source: "parRetrSecGateDelay"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "securityGPS"
+      type: "string"
+      source: "parRetr/securityGPS"
       constraints:
       - name: "distribution"
         value: "REPLICATE(*)"
@@ -98,49 +150,128 @@ workflowBody:
           type: "string"
           source: "pPass/gpsGate"
           passing: true
-        - name: "timeSec2Gate"
+        - name: "secGateDelay"
           type: "number"
-          source: "pPass/timeSec2Gate"
+          source: "pPass/secGateDelay"
+          passing: true
+        - name: "securityDelay"
+          type: "number"
+          source: "pPass/securityDelay"
+          passing: true
+        - name: "securityGPS"
+          type: "string"
+          source: "pPass/securityGPS"
           passing: true
         dataOuts:
-        - name: "gpsPassenger"
+        - name: "passengerGPS"
           type: "string"
         - name: "area"
           type: "string"
-    - function:
-        name: "calcTime2Gate"
-        type: "calcTime2GateType"
+    - if:
+        name: "ifPublic"
         dataIns:
-        - name: "gpsPassenger"
+        - name: "securityGPS"
           type: "string"
-          source: "readGPS/GPS"
-        - name: "area"
+          source: "readGPS/securityGPS"
+        - name: "passengerGPS"
           type: "string"
-          source: "readGPS/area"
-        - name: "gpsGate"
-          type: "string"
-          source: "ParallelFor/gpsGate"
-        - name: "timeSec2Gate"
+          source: "readGPS/PassengerGPS"
+        - name: "securityDelay"
           type: "number"
-          source: "readGPS/timeSec2Gate"
+          source: "readGPS/securityDelay"
+        - name: "secGateDelay"
+          type: "number"
+          source: "readGPS/secGateDelay"
+        condition:
+          conditions:
+          - data1: "readGPS/area"
+            data2: "\"public\""
+            operator: "="
+        then:
+        - function:
+            name: "disPassSec"
+            type: "distanceGPSType"
+            dataIns:
+            - name: "gps1"
+              type: "string"
+              source: "ifPublic/newGateGPS"
+            - name: "gps2"
+              type: "string"
+              source: "ifPublic/passengerGPS"
+            - name: "securityDelay"
+              type: "number"
+              source: "ifPublic/newGateGPS"
+              passing: true
+            - name: "securityGateDelay"
+              type: "number"
+              source: "ifPublic/secGateDelay"
+              passing: true
+            dataOuts:
+            - name: "delay"
+              type: "number"
+        - function:
+            name: "sumUp"
+            type: "sumUpType"
+            dataIns:
+            - name: "passSecDelay"
+              type: "number"
+              source: "disPassSec/delay"
+            - name: "securityDelay"
+              type: "number"
+              source: "disPassSec/newGateGPS"
+            - name: "securityGateDelay"
+              type: "number"
+              source: "disPassSec/secGateDelay"
+            dataOuts:
+            - name: "delayPublic"
+              type: "number"
+        else:
+        - function:
+            name: "disPassGate"
+            type: "distanceGPSType"
+            dataIns:
+            - name: "gps1"
+              type: "string"
+              source: "ifPublic/newGateGPS"
+            - name: "gps2"
+              type: "string"
+              source: "ifPublic/passengerGPS"
+            dataOuts:
+            - name: "delay"
+              type: "number"
         dataOuts:
-        - name: "time2Gate"
+        - name: "delayPublic"
           type: "number"
+          source: "sumUp/delayPublic"
+        - name: "delayRestricted"
+          type: "number"
+          source: "disPassGate/delay"
     dataOuts:
-    - name: "time2Gate"
+    - name: "delayPublic"
       type: "collection"
-      source: "calcTime2Gate/time2Gate"
+      source: "ifPublic/delayPublic"
+    - name: "delayRestricted"
+      type: "collection"
+      source: "ifPublic/delayRestricted"
 - function:
     name: "averageTime"
     type: "averageTimeType"
     dataIns:
-    - name: "time2Gate"
+    - name: "delayRestricted"
       type: "collection"
-      source: "pPass/time2Gate"
+      source: "pPass/delayRestricted"
+    - name: "delayPublic"
+      type: "collection"
+      source: "pPass/delayPublic"
     dataOuts:
-    - name: "averageTime"
+    - name: "avgTimePublic"
+      type: "number"
+    - name: "avgTimeRestricted"
       type: "number"
 dataOuts:
-- name: "averageTime"
+- name: "avgTimeRestricted"
   type: "number"
-  source: "averageTime/averageTime"
+  source: "averageTime/avgTimeRestricted"
+- name: "avgTimePublic"
+  type: "number"
+  source: "averageTime/avgTimePublic"

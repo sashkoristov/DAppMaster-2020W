@@ -485,8 +485,7 @@ The FC reads the information about the flight, the new gate and then loads all a
 
 ### Input 
 
-- An image(s) of security check is stored on the storage. You may assume one or multiple security check queues and then calculate the overall average waiting time.
-- threshold value (in seconds)
+- A location of an image(s) of security check that is stored on the storage.
 - flight number
 - new gate
 
@@ -500,7 +499,7 @@ The FC reads the information about the flight, the new gate and then loads all a
 - read the images from the storage and use them as an input for AWS Rekognition / IBM 
 - check the time to the new gate and inform the passenger accordingly based on the threshold value
 
-
+<!--->
 ## MS2 (17.12.2020): Develop the FC with AFCL
 
 Develop a preliminary FC with AFCL. 
@@ -515,6 +514,17 @@ Think about these things:
 Put together the FC using the FC editor, AFCL Java API, or the YAML editor. The main goal is to think about modularity and data flow. 
 
 Create empty functions that just produce the data how you specified with AFCL. Run the FC with these functions with the *xAFCL* Enactment Engine.
+-->
+
+## MS2 (17.12.2020): Analyze the given FC with AFCL
+
+The given FC receives a singl input - flightID and returns the average time to gate for all passengers of that flight that are present at the airport.
+
+Think about these things:
+* your database schema
+* how to map the airport
+* store images for the security check on a storage. You may want to give this as an input to the FC to make it more dynamic
+* find a function/method to calculate a distance between two GPS locations.
 
 
 ## MS3 (07.01.2021, Homework 06): Code the functions + deploy them on across ultiple regions with a Terraform script
@@ -522,16 +532,25 @@ Create empty functions that just produce the data how you specified with AFCL. R
 Details will be given with Homework 06.
 
 
-### Rough functions
+### Functions
 
-#### Get passengers `Database`
+The input from the FC is forwarded to the parRetr, which runs in parallel two sections.
+
+#### Get passengers (`getPassengers`)
 
 This function should read all passengers that are at the airport. You may use a boolean flag in the database to know whether a passenger of the flight is present at the airport.
-Think which passenger data you will need for later.
+<!--- Think which passenger data you will need for later. -->
 
-#### Calculate security check delay `Recognition Service` `S3 / Object Storage`
+It returns the collection of all passengers ID and their number.
 
-This function should load an image(s) from the storage and call the recognition service for each image (each waiting queue). In case you use more images, you would need a reduction function to calculate the average waiting time. 
+
+#### Get info for the new gate (`getNewGate`)
+
+This function returns from a database the new gate for the given flight ID.
+
+#### Calculate security check delay (`secCheckTime`)
+
+This function should load an image from the storage and call the recognition service to determine how many objects are there (persons). Calculate the delay with some equation. For instance, multiply the number of detected persons by 1.5 minute and add 5 minutes from the security check to the gate.
 
 
 #### Read GPS Location 
@@ -553,6 +572,11 @@ Hints:
 
 
 ## MS4 (21.01.2021, Homework 07)
+
+Develop the given scheduler to schedule the FC across all function deployments.
+Based on the output of the scheduler, build a CFCL file by adapting the parallelFor as you learned in Homework 04. 
+
+Details will be given with Homework 07.
 
 Develop the given scheduler to schedule the FC across all function deployments.
 Based on the output of the scheduler, build a CFCL file by adapting the parallelFor as you learned in Homework 04. 
