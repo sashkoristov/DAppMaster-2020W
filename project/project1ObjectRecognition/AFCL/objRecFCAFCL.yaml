@@ -84,6 +84,9 @@ workflowBody:
         - name: "folderFrames"
           type: "string"
           source: "pForVideos/folderFrames"
+        - name: "folderFrames"
+          type: "string"
+          source: "pForVideos/folderFrames"
           passing: true
         dataOuts:
         - name: "frames"

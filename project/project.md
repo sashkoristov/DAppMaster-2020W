@@ -34,7 +34,7 @@ A folder of videos of that day on S3. You can store videos on IBM Object storage
 
 Credit: [The Fletchers - YouTube](https://www.youtube.com/channel/UCOaIS5-uqsnXih19vIuNLmQ)
 
-
+UPDATE: The videos are moved on OLAT (to reduce charges for outgoing traffic).
 
 ### Rough steps 
 
@@ -99,6 +99,8 @@ Hints:
 1. To avoid uploading OpenCV for each function, and everytime you change them, explore other ways to get the library into your functions. 
 1. Stick to a deterministic naming convention for everything you store to the storage, to avoid overwrites.
 
+Note:
+* this function have the "same" data input folderFrames twice. Once, without passing=true, which is a real data input. The other one, with passing=true, is needed to pass the same value as output, since it is needed by other functions (`deltaFinderRekog`). 
 
 #### Delta finder, recognition and interpretation (`deltaFinderRekog`)
 
@@ -182,6 +184,7 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 * One [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
 * Two FASTQ text files (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA', respectively) of your Ecoli sample, obtained from the MiSeq.
 
+UPDATE: The videos are moved on OLAT (to reduce charges for outgoing traffic).
 
 
 
