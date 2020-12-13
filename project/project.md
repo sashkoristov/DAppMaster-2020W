@@ -34,7 +34,7 @@ A folder of videos of that day on S3. You can store videos on IBM Object storage
 
 Credit: [The Fletchers - YouTube](https://www.youtube.com/channel/UCOaIS5-uqsnXih19vIuNLmQ)
 
-UPDATE: The videos are moved on OLAT (to reduce charges for outgoing traffic).
+`UPDATE`: The videos are moved on OLAT (to reduce charges for outgoing traffic).
 
 ### Rough steps 
 
@@ -184,7 +184,7 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 * One [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
 * Two FASTQ text files (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA', respectively) of your Ecoli sample, obtained from the MiSeq.
 
-UPDATE: The videos are moved on OLAT (to reduce charges for outgoing traffic).
+`UPDATE`: The videos are moved on OLAT (to reduce charges for outgoing traffic).
 
 
 
@@ -280,11 +280,13 @@ Make sure you can run the steps on your Laptop / PC.
 Serverless functions always see a fresh filesystem, but for `bwa` it's useful to have files persist.
 We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3/Object Storage folder for AWS Lambda functions, and thus fakes continuity between functions (at least between `bwa` steps).
 
+Note: Outputs of some functions are string (e.g., aln1 of the function bwaAlnR1. You can use this for the folder name if the function has more outputs)
+
 #### Split (`split`)
 
 This function should create splits of the reference genome `NC_000913.3.fasta` based on the specified input chunks. Every split should be identical to the reference genome file, except that bases outside the split's window are replaced (masked) with `N` (null character).
 
-The function gets all inputs from the FC and passes the ones that are needed for subsequent base  functions.
+The function gets all inputs from the FC and passes the ones that this function does not need, but are needed for subsequent base  functions (R1, R2, chunks).
 
 The function outputs a collection with the file names of splitted chunks.
 
