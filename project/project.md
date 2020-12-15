@@ -236,6 +236,7 @@ We know that a `C` mutation at the fourth<br> position leads to brown eyes. Now 
 ### Hints
 
 * You can at any point make `.sam` and `.bam` files much smaller by filtering out unaligned reads: `samtools view -b -F 4 file.bam/.sam > slimfile.bam/.sam`. It is idempotent.
+* If reads in IGV are bunched together at the left end, and large parts are empty, the FASTA file was probably not split correctly. See [this section below (split)](#split) on how to do it correctly.
 * This FC is all about file management at scale. Assume that every step (`bwa index`, `bwa aln` and so on) produces new files that the next step needs.
 Furthermore, the parallelFor produces files with the same name.
 
