@@ -1,0 +1,176 @@
+---
+name: "objRecFC"
+dataIns:
+- name: "folderVideos"
+  type: "string"
+  source: "folderVideos"
+workflowBody:
+- function:
+    name: "countVideos"
+    type: "countVideosType"
+    dataIns:
+    - name: "folderVideos"
+      type: "string"
+      source: "objRecFC/folderVideos"
+    dataOuts:
+    - name: "numberVideos"
+      type: "number"
+    - name: "videos"
+      type: "collection"
+    - name: "folderFrames"
+      type: "collection"
+    - name: "folderVideos"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "js:xxxxxxxxxxxx.json"
+- parallelFor:
+    name: "pForVideos"
+    dataIns:
+    - name: "videos"
+      type: "string"
+      source: "countVideos/videos"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "folderVideos"
+      type: "string"
+      source: "countVideos/folderVideos"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "folderFrames"
+      type: "string"
+      source: "countVideos/folderFrames"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    loopCounter:
+      type: "number"
+      to: "countVideos/numberVideos"
+      step: "1"
+    loopBody:
+    - function:
+        name: "frameExtractor"
+        type: "frameExtractorType"
+        dataIns:
+        - name: "video"
+          type: "string"
+          source: "pForVideos/videos"
+        - name: "folderVideos"
+          type: "string"
+          source: "pForVideos/folderVideos"
+        - name: "folderFrames"
+          type: "string"
+          source: "pForVideos/folderFrames"
+        dataOuts:
+        - name: "frames"
+          type: "collection"
+        - name: "numberFrames"
+          type: "number"
+        - name: "frames2"
+          type: "collection"
+        - name: "folderFrames"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "js:xxxxxxxxxxxx.json"
+    - parallelFor:
+        name: "pForDeltas"
+        dataIns:
+        - name: "frames"
+          type: "string"
+          source: "frameExtractor/frames"
+          constraints:
+          - name: "distribution"
+            value: "BLOCK(1)"
+        - name: "folderFrames"
+          type: "string"
+          source: "frameExtractor/folderFrames"
+          constraints:
+          - name: "distribution"
+            value: "REPLICATE(*)"
+        - name: "frames2"
+          type: "string"
+          source: "frameExtractor/frames2"
+          constraints:
+          - name: "distribution"
+            value: "BLOCK(1)"
+        loopCounter:
+          type: "number"
+          to: "frameExtractor/numberFrames"
+          step: "1"
+        loopBody:
+        - function:
+            name: "deltaFinderRekog"
+            type: "deltaFinderRekogType"
+            dataIns:
+            - name: "frame1"
+              type: "string"
+              source: "pForDeltas/frames"
+            - name: "frame2"
+              type: "string"
+              source: "pForDeltas/frames2"
+            - name: "folderFrames"
+              type: "string"
+              source: "pForDeltas/folderFrames"
+            dataOuts:
+            - name: "dogs"
+              type: "number"
+            - name: "kids"
+              type: "number"
+            properties:
+            - name: "resource"
+              value: "js:xxxxxxxxxxxx.json"
+        dataOuts:
+        - name: "dogs"
+          type: "collection"
+          source: "deltaFinderRekog/dogs"
+        - name: "kids"
+          type: "collection"
+          source: "deltaFinderRekog/kids"
+    - function:
+        name: "countPerVideo"
+        type: "countPerVideoType"
+        dataIns:
+        - name: "dogs"
+          type: "collection"
+          source: "pForDeltas/dogs"
+        - name: "kids"
+          type: "collection"
+          source: "pForDeltas/kids"
+        dataOuts:
+        - name: "dogsVideo"
+          type: "number"
+        - name: "kidsVideo"
+          type: "number"
+        properties:
+        - name: "resource"
+          value: "js:xxxxxxxxxxxx.json"
+    dataOuts:
+    - name: "kids"
+      type: "collection"
+      source: "countPerVideo/kidsVideo"
+    - name: "dogs"
+      type: "collection"
+      source: "countPerVideo/dogsVideo"
+- function:
+    name: "outPerVideo"
+    type: "outPerVideoType"
+    dataIns:
+    - name: "kids"
+      type: "collection"
+      source: "pForVideos/kids"
+    - name: "dogs"
+      type: "collection"
+      source: "pForVideos/dogs"
+    dataOuts:
+    - name: "answer"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "js:xxxxxxxxxxxx.json"
+dataOuts:
+- name: "answer"
+  type: "string"
+  source: "outPerVideo/answer"
