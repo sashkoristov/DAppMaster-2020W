@@ -1,0 +1,212 @@
+---
+name: "BWAFC"
+dataIns:
+- name: "fasta"
+  type: "string"
+  source: "fasta"
+- name: "R1"
+  type: "string"
+  source: "R1"
+- name: "R2"
+  type: "string"
+  source: "R2"
+- name: "folders"
+  type: "collection"
+  source: "folders"
+- name: "chunks"
+  type: "number"
+  source: "chunks"
+workflowBody:
+- function:
+    name: "split"
+    type: "splitType"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "BWAFC/fasta"
+    - name: "R1"
+      type: "string"
+      source: "BWAFC/R1"
+    - name: "R2"
+      type: "string"
+      source: "BWAFC/R2"
+    - name: "folders"
+      type: "collection"
+      source: "BWAFC/folders"
+    - name: "chunks"
+      type: "number"
+      source: "BWAFC/chunks"
+    dataOuts:
+    - name: "fastaSplit"
+      type: "collection"
+    - name: "R1Out"
+      type: "string"
+    - name: "R2Out"
+      type: "string"
+    - name: "folders"
+      type: "collection"
+    - name: "chunksOut"
+      type: "number"
+    properties:
+    - name: "resource"
+      value: "bwa2-split"
+- parallelFor:
+    name: "pFasta"
+    dataIns:
+    - name: "fasta"
+      type: "string"
+      source: "split/fastaSplit"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "R1"
+      type: "string"
+      source: "split/R1Out"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "R2"
+      type: "string"
+      source: "split/R2Out"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    loopCounter:
+      from: "0"
+      to: "split/chunksOut"
+      step: "1"
+    loopBody:
+    - function:
+        name: "bwaIndex"
+        type: "bwaIndexType"
+        dataIns:
+        - name: "fasta"
+          type: "string"
+          source: "pFasta/fasta"
+        - name: "R1"
+          type: "string"
+          source: "pFasta/R1"
+        - name: "R2"
+          type: "string"
+          source: "pFasta/R2"
+        dataOuts:
+        - name: "fastaIndexed"
+          type: "string"
+        - name: "R1Out"
+          type: "string"
+        - name: "R2Out"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "bwa2-index"
+    - parallel:
+        name: "parALN"
+        dataIns:
+        - name: "fastaIndexed"
+          type: "string"
+          source: "bwaIndex/fastaIndexed"
+        - name: "R1"
+          type: "string"
+          source: "bwaIndex/R1Out"
+        - name: "R2"
+          type: "string"
+          source: "bwaIndex/R2Out"
+        parallelBody:
+        - section:
+          - function:
+              name: "bwaAlnR1"
+              type: "bwaAlnRType"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "parALN/fastaIndexed"
+              - name: "R"
+                type: "string"
+                source: "parALN/R1"
+              dataOuts:
+              - name: "aln"
+                type: "string"
+              - name: "fastaIndexedOut"
+                type: "string"
+              - name: "ROut"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "bwa2-aln"
+        - section:
+          - function:
+              name: "bwaAlnR2"
+              type: "bwaAlnRType"
+              dataIns:
+              - name: "fastaIndexed"
+                type: "string"
+                source: "parALN/fastaIndexed"
+              - name: "R"
+                type: "string"
+                source: "parALN/R2"
+              dataOuts:
+              - name: "aln"
+                type: "string"
+              - name: "fastaIndexedOut"
+                type: "string"
+              - name: "ROut"
+                type: "string"
+              properties:
+              - name: "resource"
+                value: "bwa2-aln"
+        dataOuts:
+        - name: "aln"
+          type: "collection"
+          source: "bwaAlnR1/fastaIndexedOut,bwaAlnR2/fastaIndexedOut,bwaAlnR1/aln,bwaAlnR2/aln,bwaAlnR1/ROut,bwaAlnR2/ROut"
+    - function:
+        name: "bwaSampe"
+        type: "bwaSampeType"
+        dataIns:
+        - name: "aln"
+          type: "collection"
+          source: "parALN/aln"
+        dataOuts:
+        - name: "sam"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "bwa2-sampe"
+    dataOuts:
+    - name: "sam"
+      type: "collection"
+      source: "bwaSampe/sam"
+- function:
+    name: "merge"
+    type: "mergeType"
+    dataIns:
+    - name: "sam"
+      type: "collection"
+      source: "pFasta/sam"
+    dataOuts:
+    - name: "samMerged"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "bwa2-merge"
+- function:
+    name: "sort"
+    type: "sortType"
+    dataIns:
+    - name: "samMerged"
+      type: "string"
+      source: "merge/samMerged"
+    dataOuts:
+    - name: "bam"
+      type: "string"
+    - name: "bambai"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "bwa2-sort"
+dataOuts:
+- name: "bam"
+  type: "string"
+  source: "sort/bam"
+- name: "bambai"
+  type: "string"
+  source: "sort/bambai"

@@ -1,0 +1,7 @@
+{
+	"fasta": "NC_000913.3.fasta",
+	"R1": "hipa7_reads_R1.fastq",
+	"R2": "hipa7_reads_R2.fastq",
+	"folders": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8"],
+	"chunks": 8
+}
