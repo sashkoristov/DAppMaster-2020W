@@ -1,0 +1,316 @@
+---
+name: "GCAFC"
+dataIns:
+- name: "flightID"
+  type: "string"
+  source: "flightID"
+- name: "newGate"
+  type: "string"
+  source: "newGate"
+- name: "security"
+  type: "string"
+  source: "security"
+workflowBody:
+- parallel:
+    name: "parRetr"
+    dataIns:
+    - name: "flightID"
+      type: "string"
+      source: "GCAFC/flightID"
+    - name: "newGate"
+      type: "string"
+      source: "GCAFC/newGate"
+    - name: "security"
+      type: "string"
+      source: "GCAFC/security"
+    parallelBody:
+    - section:
+      - function:
+          name: "getPassengers"
+          type: "getPassengersType"
+          dataIns:
+          - name: "flightID"
+            type: "string"
+            source: "parRetr/flightID"
+          dataOuts:
+          - name: "passengerIDs"
+            type: "collection"
+          - name: "passengersAtAirport"
+            type: "number"
+          properties:
+          - name: "resource"
+            value: "p4-getPassengers.json"
+    - section:
+      - function:
+          name: "secCheckTime"
+          type: "secCheckTimeType"
+          dataIns:
+          - name: "security"
+            type: "string"
+            source: "parRetr/security"
+          dataOuts:
+          - name: "securityDelay"
+            type: "number"
+          properties:
+          - name: "resource"
+            value: "p4-secCheckTime.json"
+    - section:
+      - function:
+          name: "getGateGPS"
+          type: "getGateGPSType"
+          dataIns:
+          - name: "gate"
+            type: "string"
+            source: "parRetr/newGate"
+          dataOuts:
+          - name: "newGateGPS"
+            type: "string"
+          - name: "securityGPS"
+            type: "string"
+          properties:
+          - name: "resource"
+            value: "p4-getGateGPS.json"
+      - function:
+          name: "distanceGPS"
+          type: "distanceGPSType"
+          dataIns:
+          - name: "gps1"
+            type: "string"
+            source: "getGateGPS/newGateGPS"
+          - name: "gps2"
+            type: "string"
+            source: "getGateGPS/securityGPS"
+          - name: "newGateGPS"
+            type: "string"
+            source: "getGateGPS/newGateGPS"
+          - name: "securityGPS"
+            type: "string"
+            source: "getGateGPS/securityGPS"
+          dataOuts:
+          - name: "delay"
+            type: "number"
+          - name: "newGateGPSOut"
+            type: "string"
+          - name: "securityGPSOut"
+            type: "string"
+          properties:
+          - name: "resource"
+            value: "p4-distanceGPS.json"
+    dataOuts:
+    - name: "passengerIDs"
+      type: "collection"
+      source: "getPassengers/passengerIDs"
+    - name: "securityDelay"
+      type: "number"
+      source: "secCheckTime/securityDelay"
+    - name: "passengersAtAirport"
+      type: "number"
+      source: "getPassengers/passengersAtAirport"
+    - name: "gpsNewGate"
+      type: "string"
+      source: "distanceGPS/newGateGPSOut"
+    - name: "delay"
+      type: "number"
+      source: "distanceGPS/delay"
+    - name: "securityGPS"
+      type: "string"
+      source: "distanceGPS/securityGPSOut"
+- parallelFor:
+    name: "pPass"
+    dataIns:
+    - name: "passengerIDs"
+      type: "string"
+      source: "parRetr/passengerIDs"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "gpsNewGate"
+      type: "string"
+      source: "parRetr/gpsNewGate"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "securityDelay"
+      type: "number"
+      source: "parRetr/securityDelay"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "secGateDelay"
+      type: "number"
+      source: "parRetr/delay"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    - name: "securityGPS"
+      type: "string"
+      source: "parRetr/securityGPS"
+      constraints:
+      - name: "distribution"
+        value: "REPLICATE(*)"
+    loopCounter:
+      from: "0"
+      to: "parRetr/passengersAtAirport"
+      step: "1"
+    loopBody:
+    - function:
+        name: "readGPS"
+        type: "readGPSType"
+        dataIns:
+        - name: "passengerIDs"
+          type: "string"
+          source: "pPass/passengerIDs"
+        - name: "gpsGate"
+          type: "string"
+          source: "pPass/gpsNewGate"
+        - name: "secGateDelay"
+          type: "number"
+          source: "pPass/secGateDelay"
+        - name: "securityDelay"
+          type: "number"
+          source: "pPass/securityDelay"
+        - name: "securityGPS"
+          type: "string"
+          source: "pPass/securityGPS"
+        dataOuts:
+        - name: "passengerGPS"
+          type: "string"
+        - name: "area"
+          type: "number"
+        - name: "gpsGateOut"
+          type: "string"
+        - name: "secGateDelayOut"
+          type: "number"
+        - name: "securityDelayOut"
+          type: "number"
+        - name: "securityGPSOut"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "p4-readGPS.json"
+    - if:
+        name: "ifPublic"
+        dataIns:
+        - name: "inVal"
+          type: "number"
+          source: "readGPS/area"
+        - name: "passengerGPS"
+          type: "string"
+          source: "readGPS/passengerGPS"
+        - name: "gpsGateOut"
+          type: "string"
+          source: "readGPS/gpsGateOut"
+        - name: "secGateDelay"
+          type: "number"
+          source: "readGPS/secGateDelayOut"
+        - name: "securityDelay"
+          type: "number"
+          source: "readGPS/securityDelayOut"
+        - name: "securityGPS"
+          type: "string"
+          source: "readGPS/securityGPSOut"
+        condition:
+          conditions:
+          - data1: "ifPublic/inVal"
+            data2: "1"
+            operator: "=="
+        then:
+        - function:
+            name: "disPassSec"
+            type: "distanceGPSType"
+            dataIns:
+            - name: "gps1"
+              type: "string"
+              source: "ifPublic/securityGPS"
+            - name: "gps2"
+              type: "string"
+              source: "ifPublic/passengerGPS"
+            - name: "securityDelay"
+              type: "number"
+              source: "ifPublic/securityDelay"
+              passing: true
+            - name: "securityGateDelay"
+              type: "number"
+              source: "ifPublic/secGateDelay"
+              passing: true
+            dataOuts:
+            - name: "delay"
+              type: "number"
+            properties:
+            - name: "resource"
+              value: "p4-distanceGPS.json"
+        - function:
+            name: "sumUp"
+            type: "sumUpType"
+            dataIns:
+            - name: "passSecDelay"
+              type: "number"
+              source: "disPassSec/delay"
+            - name: "securityDelay"
+              type: "number"
+              source: "disPassSec/securityDelay"
+            - name: "securityGateDelay"
+              type: "number"
+              source: "disPassSec/securityGateDelay"
+            dataOuts:
+            - name: "delayPublic"
+              type: "number"
+            properties:
+            - name: "resource"
+              value: "p4-sumUp.json"
+        else:
+        - function:
+            name: "disPassGate"
+            type: "distanceGPSType"
+            dataIns:
+            - name: "gps1"
+              type: "string"
+              source: "ifPublic/gpsGateOut"
+            - name: "gps2"
+              type: "string"
+              source: "ifPublic/passengerGPS"
+            dataOuts:
+            - name: "delay"
+              type: "number"
+            properties:
+            - name: "resource"
+              value: "p4-distanceGPS.json"
+        dataOuts:
+        - name: "delayPublic"
+          type: "number"
+          source: "sumUp/delayPublic"
+        - name: "delayRestricted"
+          type: "number"
+          source: "disPassGate/delay"
+    dataOuts:
+    - name: "delayPublic"
+      type: "collection"
+      source: "ifPublic/delayPublic"
+    - name: "delayRestricted"
+      type: "collection"
+      source: "ifPublic/delayRestricted"
+- function:
+    name: "averageTime"
+    type: "averageTimeType"
+    dataIns:
+    - name: "delayRestricted"
+      type: "collection"
+      source: "pPass/delayRestricted"
+    - name: "delayPublic"
+      type: "collection"
+      source: "pPass/delayPublic"
+    dataOuts:
+    - name: "avgTimePublic"
+      type: "number"
+    - name: "avgTimeRestricted"
+      type: "number"
+    properties:
+    - name: "resource"
+      value: "p4-avgTime.json"
+dataOuts:
+- name: "avgTimeRestricted"
+  type: "number"
+  source: "averageTime/avgTimeRestricted"
+- name: "avgTimePublic"
+  type: "number"
+  source: "averageTime/avgTimePublic"
