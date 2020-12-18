@@ -1,0 +1,102 @@
+---
+name: "stockFC"
+dataIns:
+- name: "stockTickers"
+  type: "collection"
+  source: "stockTickers"
+- name: "folder"
+  type: "string"
+  source: "folder"
+workflowBody:
+- function:
+    name: "fetchProcess"
+    type: "fetchProcessType"
+    dataIns:
+    - name: "stockTickers"
+      type: "collection"
+      source: "stockFC/stockTickers"
+    - name: "folder"
+      type: "string"
+      source: "stockFC/folder"
+    dataOuts:
+    - name: "prices"
+      type: "collection"
+    - name: "tickerNumber"
+      type: "number"
+    - name: "stockTickersOut"
+      type: "collection"
+    - name: "folderOut"
+      type: "string"
+    properties:
+    - name: "resource"
+      value: "p3-fetchProcess.json"
+- parallelFor:
+    name: "pTicker"
+    dataIns:
+    - name: "stockTickers"
+      type: "string"
+      source: "fetchProcess/stockTickersOut"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    - name: "prices"
+      type: "string"
+      source: "fetchProcess/prices"
+      constraints:
+      - name: "distribution"
+        value: "BLOCK(1)"
+    loopCounter:
+      from: "0"
+      to: "fetchProcess/tickerNumber"
+      step: "1"
+    loopBody:
+    - function:
+        name: "forecast"
+        type: "forecastType"
+        dataIns:
+        - name: "prices"
+          type: "string"
+          source: "pTicker/prices"
+        - name: "ticker"
+          type: "string"
+          source: "pTicker/stockTickers"
+        dataOuts:
+        - name: "predictedPrices"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "p3-stockTickers.json"
+    - function:
+        name: "processResult"
+        type: "processResultType"
+        dataIns:
+        - name: "predictedPrices"
+          type: "string"
+          source: "forecast/predictedPrices"
+        dataOuts:
+        - name: "predictedPricesProcessed"
+          type: "string"
+        properties:
+        - name: "resource"
+          value: "p3-processResult.json"
+    dataOuts:
+    - name: "predictedPricesProcessed"
+      type: "collection"
+      source: "processResult/predictedPricesProcessed"
+- function:
+    name: "createChart"
+    type: "createChartType"
+    dataIns:
+    - name: "predictedPricesProcessed"
+      type: "collection"
+      source: "pTicker/predictedPricesProcessed"
+    dataOuts:
+    - name: "charts"
+      type: "collection"
+    properties:
+    - name: "resource"
+      value: "p3-createChart.json"
+dataOuts:
+- name: "charts"
+  type: "collection"
+  source: "createChart/charts"
