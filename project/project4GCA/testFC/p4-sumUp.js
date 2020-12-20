@@ -1,4 +1,5 @@
 function main(params) {
+    delay = params.area * 100 + 50;
 	return { 
 	    // return inputs
         passSecDelayOut: params.passSecDelay,
@@ -6,6 +7,6 @@ function main(params) {
         securityGateDelayOut: params.securityGateDelay,
 
 	    // return outputs
-	    delayPublic: 100
+	    delayArea: "{\n\"area\":" + params.area + ",\n\"delay\":"+ delay + ",\n}"
 	};
 }

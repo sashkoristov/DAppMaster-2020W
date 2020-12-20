@@ -7,6 +7,7 @@ function main(params) {
         securityGPSOut: params.securityGPS,
 
 	    // return outputs
-	    delay: 5
+	    delay: 20,
+	    delayArea: "{\n\"area\":" + params.area + ",\n\"delay\":" + 40 + ",\n}"
 	};
 }

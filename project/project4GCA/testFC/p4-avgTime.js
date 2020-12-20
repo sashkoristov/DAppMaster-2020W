@@ -1,9 +1,7 @@
 function main(params) {
 	return { 
 	    // return inputs
-        delayRestrictedOut: params.delayRestricted,
-        delayPublicOut: params.delayPublic,
-        securityGateDelayOut: params.securityGateDelay,
+        delayOut: params.delay,
 
 	    // return outputs
 	    avgTimePublic: 100,

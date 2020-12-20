@@ -39,7 +39,7 @@ workflowBody:
             type: "number"
           properties:
           - name: "resource"
-            value: "p4-getPassengers.json"
+            value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-getPassengers.json"
     - section:
       - function:
           name: "secCheckTime"
@@ -53,7 +53,7 @@ workflowBody:
             type: "number"
           properties:
           - name: "resource"
-            value: "p4-secCheckTime.json"
+            value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-secCheckTime.json"
     - section:
       - function:
           name: "getGateGPS"
@@ -69,7 +69,7 @@ workflowBody:
             type: "string"
           properties:
           - name: "resource"
-            value: "p4-getGateGPS.json"
+            value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-getGateGPS.json"
       - function:
           name: "distanceGPS"
           type: "distanceGPSType"
@@ -95,7 +95,7 @@ workflowBody:
             type: "string"
           properties:
           - name: "resource"
-            value: "p4-distanceGPS.json"
+            value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-distanceGPS.json"
     dataOuts:
     - name: "passengerIDs"
       type: "collection"
@@ -187,7 +187,7 @@ workflowBody:
           type: "string"
         properties:
         - name: "resource"
-          value: "p4-readGPS.json"
+          value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-readGPS.json"
     - if:
         name: "ifPublic"
         dataIns:
@@ -233,12 +233,16 @@ workflowBody:
               type: "number"
               source: "ifPublic/secGateDelay"
               passing: true
+            - name: "area"
+              type: "number"
+              source: "ifPublic/inVal"
+              passing: true
             dataOuts:
             - name: "delay"
-              type: "number"
+              type: "string"
             properties:
             - name: "resource"
-              value: "p4-distanceGPS.json"
+              value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-distanceGPS.json"
         - function:
             name: "sumUp"
             type: "sumUpType"
@@ -252,12 +256,15 @@ workflowBody:
             - name: "securityGateDelay"
               type: "number"
               source: "disPassSec/securityGateDelay"
-            dataOuts:
-            - name: "delayPublic"
+            - name: "area"
               type: "number"
+              source: "disPassSec/area"
+            dataOuts:
+            - name: "delayArea"
+              type: "string"
             properties:
             - name: "resource"
-              value: "p4-sumUp.json"
+              value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-sumUp.json"
         else:
         - function:
             name: "disPassGate"
@@ -269,36 +276,30 @@ workflowBody:
             - name: "gps2"
               type: "string"
               source: "ifPublic/passengerGPS"
-            dataOuts:
-            - name: "delay"
+            - name: "area"
               type: "number"
+              source: "ifPublic/inVal"
+            dataOuts:
+            - name: "delayArea"
+              type: "string"
             properties:
             - name: "resource"
-              value: "p4-distanceGPS.json"
+              value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-distanceGPS.json"
         dataOuts:
-        - name: "delayPublic"
-          type: "number"
-          source: "sumUp/delayPublic"
-        - name: "delayRestricted"
-          type: "number"
-          source: "disPassGate/delay"
+        - name: "delayPassenger"
+          type: "string"
+          source: "sumUp/delayArea,disPassGate/delayArea"
     dataOuts:
-    - name: "delayPublic"
+    - name: "delayPassenger"
       type: "collection"
-      source: "ifPublic/delayPublic"
-    - name: "delayRestricted"
-      type: "collection"
-      source: "ifPublic/delayRestricted"
+      source: "ifPublic/delayPassenger"
 - function:
     name: "averageTime"
     type: "averageTimeType"
     dataIns:
-    - name: "delayRestricted"
+    - name: "delay"
       type: "collection"
-      source: "pPass/delayRestricted"
-    - name: "delayPublic"
-      type: "collection"
-      source: "pPass/delayPublic"
+      source: "pPass/delayPassenger"
     dataOuts:
     - name: "avgTimePublic"
       type: "number"
@@ -306,7 +307,7 @@ workflowBody:
       type: "number"
     properties:
     - name: "resource"
-      value: "p4-avgTime.json"
+      value: "js:https://eu-de.functions.appdomain.cloud/api/v1/web/566a4392-2dfc-4e49-a0e4-300f7d4c30dd/default/p4-avgTime.json"
 dataOuts:
 - name: "avgTimeRestricted"
   type: "number"

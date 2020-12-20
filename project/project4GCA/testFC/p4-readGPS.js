@@ -1,5 +1,6 @@
 function main(params) {
-	return { 
+    areaRnd = Math.round(Math.random());
+	return {
 	    // return inputs
         passengerIDsOut: params.passengerIDs,
         gpsGateOut: params.gpsGate,
@@ -9,6 +10,6 @@ function main(params) {
 
 	    // return outputs
 	    passengerGPS: "DDP MMP SSP",
-	    area: 1 // public -> then
+	    area: areaRnd // public -> then
 	};
 }
