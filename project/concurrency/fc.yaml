@@ -1,0 +1,23 @@
+---
+name: "fc"
+dataIns:
+- name: "total"
+  type: "number"
+  source: "total"
+workflowBody:
+- parallelFor:
+    name: "ParallelFor"
+    loopCounter:
+      from: "0"
+      to: "fc/total"
+      step: "1"
+    loopBody:
+    - function:
+        name: "f"
+        type: "aType"
+        properties:
+        - name: "resource"
+          value: "RESOURCE LINK"
+    constraints:
+    - name: "concurrency"
+      value: "2"
