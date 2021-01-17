@@ -1,0 +1,82 @@
+---
+name: "fc"
+dataIns:
+- name: "name"
+  type: "collection"
+  source: "name"
+workflowBody:
+- parallel:
+    name: "parallelized_ParallelFor"
+    dataIns:
+    - name: "name"
+      type: "string"
+      source: "fc/name"
+    parallelBody:
+    - section:
+      - parallelFor:
+          name: "ParallelFor_0"
+          dataIns:
+          - name: "name"
+            type: "string"
+            source: "parallelized_ParallelFor/name"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+            - name: "element-index"
+              value: "0:1"
+          loopCounter:
+            type: "number"
+            from: "0"
+            to: "2"
+            step: "1"
+          loopBody:
+          - function:
+              name: "HelloWorld_0"
+              type: "string"
+              dataIns:
+              - name: "name"
+                type: "string"
+                source: "ParallelFor_0/name"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "name"
+            type: "string"
+            source: "HelloWorld_0/name"
+    - section:
+      - parallelFor:
+          name: "ParallelFor_1"
+          dataIns:
+          - name: "name"
+            type: "string"
+            source: "parallelized_ParallelFor/name"
+            constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+            - name: "element-index"
+              value: "2:3"
+          loopCounter:
+            type: "number"
+            from: "2"
+            to: "4"
+            step: "1"
+          loopBody:
+          - function:
+              name: "HelloWorld_1"
+              type: "string"
+              dataIns:
+              - name: "name"
+                type: "string"
+                source: "ParallelFor_1/name"
+              properties:
+              - name: "resource"
+                value: "resourceLink"
+          dataOuts:
+          - name: "name"
+            type: "string"
+            source: "HelloWorld_1/name"
+    dataOuts:
+    - name: "OutVal"
+      type: "collection"
+      source: "ParallelFor_0/name,ParallelFor_1/name"
